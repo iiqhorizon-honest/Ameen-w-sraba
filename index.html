@@ -77,7 +77,7 @@
         /* Shared Game Info */
         .target-box { font-size: 1.1rem; color: #94a3b8; }
         .target-number { font-family: 'Orbitron', sans-serif; font-size: 1.8rem; color: #ff007f; font-weight: 700; margin: 0 5px; text-shadow: 0 0 10px rgba(255, 0, 127, 0.4); letter-spacing: 2px; }
-        .status-msg { font-size: 0.95rem; color: #38bdf8; margin-top: 5px; height: 40px; font-weight: 600; display: flex; align-items: center; justify-content: center;}
+        .status-msg { font-size: 0.95rem; color: #38bdf8; margin-top: 5px; height: 40px; font-weight: 600; display: flex; align-items: center; justify-content: center; text-align: center;}
 
         /* Display */
         .display { font-family: 'Orbitron', sans-serif; font-size: 3.5rem; margin: 15px 0; display: flex; justify-content: center; align-items: center; gap: 15px; direction: ltr; }
@@ -97,6 +97,14 @@
         .btn-stop { background: linear-gradient(135deg, #f43f5e, #be123c); color: white; box-shadow: 0 5px 15px rgba(244, 63, 94, 0.4); }
         .btn-next { background: #334155; color: white; }
         
+        .extra-controls { display: flex; gap: 10px; margin-top: 15px; justify-content: center; }
+        .extra-controls button {
+            background: rgba(255,255,255,0.05); color: #cbd5e1;
+            font-size: 0.85rem; padding: 10px 20px; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px; cursor: pointer; font-family: 'Tajawal', sans-serif;
+        }
+        .extra-controls button:hover { background: rgba(255,255,255,0.1); color: white; }
+
         .back-btn { background: transparent; color: #64748b; font-size: 0.85rem; border: none; margin-top: 15px; cursor: pointer; text-decoration: underline; font-family: 'Tajawal', sans-serif;}
 
         /* Guess Inputs */
@@ -148,6 +156,10 @@
                 <button class="btn btn-stop" id="g1-btn-stop" style="display:none;" onclick="g1_stop()">وقّف</button>
                 <button class="btn btn-next" id="g1-btn-next" style="display:none;" onclick="g1_next()">جولة جديدة</button>
             </div>
+            <div class="extra-controls">
+                <button onclick="g1_manualChangeTarget()">تغيير الهدف 🎯</button>
+                <button onclick="g1_manualResetScores()">تصفير النتائج 🔄</button>
+            </div>
             <button class="back-btn" onclick="backToMenu()">الرجوع للقائمة الرئيسية</button>
         </div>
 
@@ -180,6 +192,11 @@
                 <button class="btn btn-stop" id="g2-btn-stop" style="display:none;" onclick="g2_stop()">وقّف (صوت)</button>
                 <button class="btn btn-next" id="g2-btn-next" style="display:none;" onclick="g2_next()">جولة جديدة</button>
             </div>
+            
+            <div class="extra-controls">
+                <button onclick="g2_manualResetScores()">تصفير النتائج 🔄</button>
+            </div>
+
             <button class="back-btn" onclick="backToMenu()">الرجوع للقائمة الرئيسية</button>
         </div>
 
@@ -238,8 +255,8 @@
         let activeGame = 0; // 1 or 2
         function fullReset() {
             document.getElementById('celebration-overlay').classList.remove('active');
-            if(activeGame === 1) g1_hardReset();
-            else if(activeGame === 2) g2_hardReset();
+            if(activeGame === 1) { g1_scoreAmin = 0; g1_scoreSaraba = 0; g1_hardReset(); }
+            else if(activeGame === 2) { g2_scoreAmin = 0; g2_scoreSaraba = 0; g2_hardReset(); }
         }
 
         // --- Game 1: Target Match Logic ---
@@ -253,6 +270,22 @@
             const sec = Math.floor(Math.random() * 5) + 2; const mom = Math.floor(Math.random() * 100);
             g1_targetTotal = (sec * 100) + mom;
             document.getElementById('g1-target').textContent = sec.toString().padStart(2, '0') + ":" + mom.toString().padStart(2, '0');
+        }
+
+        function g1_manualChangeTarget() {
+            if (g1_isRunning) return; 
+            g1_genTarget();
+            playSound(800, 1200, 'sine');
+            document.getElementById('g1-status').textContent = "تم تغيير الهدف!";
+        }
+
+        function g1_manualResetScores() {
+            if (g1_isRunning) return;
+            g1_scoreAmin = 0; g1_scoreSaraba = 0; 
+            document.getElementById('g1-s-amin').textContent = "0"; 
+            document.getElementById('g1-s-saraba').textContent = "0";
+            g1_next();
+            document.getElementById('g1-status').textContent = "تم تصفير الماتش. دور أمين!";
         }
 
         function g1_start() {
@@ -303,7 +336,7 @@
         }
 
         function g1_hardReset() {
-            g1_scoreAmin = 0; g1_scoreSaraba = 0; document.getElementById('g1-s-amin').textContent = "0"; document.getElementById('g1-s-saraba').textContent = "0";
+            document.getElementById('g1-s-amin').textContent = g1_scoreAmin; document.getElementById('g1-s-saraba').textContent = g1_scoreSaraba;
             g1_next();
         }
 
@@ -311,22 +344,32 @@
         let g2_startTime = 0, g2_elapsed = 0, g2_timer;
         let g2_actualTotal = 0, g2_turn = 'amin', g2_diffAmin = 0, g2_diffSaraba = 0;
         let g2_scoreAmin = 0, g2_scoreSaraba = 0;
+        let g2_isRunning = false;
 
         function openGame2() { activeGame = 2; showScreen('screen-game2'); g2_hardReset(); }
 
+        function g2_manualResetScores() {
+            if (g2_isRunning) return; // منع التصفير أثناء عمل العداد
+            g2_scoreAmin = 0; g2_scoreSaraba = 0; 
+            document.getElementById('g2-s-amin').textContent = "0"; 
+            document.getElementById('g2-s-saraba').textContent = "0";
+            g2_next();
+            document.getElementById('g2-status').innerHTML = "تم تصفير الماتش.<br>أمين هيتوقع!";
+        }
+
         function g2_start() {
-            playSound(1200, 300); g2_startTime = Date.now() - g2_elapsed; g2_timer = setInterval(g2_update, 10);
+            playSound(1200, 300); g2_isRunning = true; g2_startTime = Date.now() - g2_elapsed; g2_timer = setInterval(g2_update, 10);
             document.getElementById('g2-btn-start').style.display = "none"; document.getElementById('g2-btn-stop').style.display = "block";
             // Hide numbers
             document.getElementById('g2-sec').textContent = "??"; document.getElementById('g2-sec').classList.add('hidden-num');
             document.getElementById('g2-mom').textContent = "??"; document.getElementById('g2-mom').classList.add('hidden-num');
-            document.getElementById('g2-status').textContent = "العداد شغال في السر 🤫.. وقّف براحتك";
+            document.getElementById('g2-status').innerHTML = "العداد شغال في السر 🤫<br>وقّف براحتك يا وحش";
         }
 
         function g2_update() { /* No UI update during running to prevent cheating */ }
 
         function g2_stop() {
-            playSound(600, 100); clearInterval(g2_timer); g2_elapsed = Date.now() - g2_startTime;
+            playSound(600, 100); clearInterval(g2_timer); g2_isRunning = false; g2_elapsed = Date.now() - g2_startTime;
             g2_actualTotal = Math.floor(g2_elapsed / 10);
             document.getElementById('g2-btn-stop').style.display = "none";
             
@@ -334,7 +377,7 @@
             document.getElementById('g2-guess-box').style.display = "flex";
             if(g2_turn === 'amin') document.getElementById('g2-guess-title').textContent = "يا أمين، تتوقع العداد وقف عند كام؟";
             else document.getElementById('g2-guess-title').textContent = "يا صرابا، تتوقع العداد وقف عند كام؟";
-            document.getElementById('g2-status').textContent = "مستنيين التوقع...";
+            document.getElementById('g2-status').innerHTML = "مستنيين التوقع...";
         }
 
         function g2_submitGuess() {
@@ -351,7 +394,7 @@
             document.getElementById('g2-in-sec').value = ''; document.getElementById('g2-in-mom').value = ''; // clear inputs
 
             if (g2_turn === 'amin') {
-                g2_diffAmin = diff; document.getElementById('g2-status').textContent = `الرقم الحقيقي طلع! أمين جاب فرق ${diff} لحظة. دور صرابا يتوقع!`;
+                g2_diffAmin = diff; document.getElementById('g2-status').innerHTML = `الرقم الحقيقي ظهر! أمين جاب فرق ${diff} لحظة.<br>دور صرابا يتوقع!`;
                 g2_turn = 'saraba'; document.getElementById('g2-p-amin').classList.remove('active'); document.getElementById('g2-p-saraba').classList.add('active');
                 document.getElementById('g2-btn-start').style.display = "block";
                 g2_elapsed = 0; // ready for next run
@@ -364,7 +407,7 @@
 
                 if (matchWin) { setTimeout(() => triggerWin(matchWin), 2000); } // delay slightly so they see the result
                 else {
-                    document.getElementById('g2-status').textContent = res;
+                    document.getElementById('g2-status').innerHTML = res;
                     document.getElementById('g2-btn-next').style.display = "block";
                 }
             }
@@ -373,13 +416,15 @@
         function g2_next() {
             playSound(600, 100, 'triangle'); g2_turn = 'amin';
             document.getElementById('g2-p-saraba').classList.remove('active'); document.getElementById('g2-p-amin').classList.add('active');
-            document.getElementById('g2-status').textContent = "أمين هيتوقع!<br>يا صرابا شغل ووقّف العداد براحتك";
+            document.getElementById('g2-status').innerHTML = "أمين هيتوقع!<br>يا صرابا شغل ووقّف العداد براحتك";
             document.getElementById('g2-sec').textContent = "00"; document.getElementById('g2-mom').textContent = "00"; g2_elapsed = 0;
             document.getElementById('g2-btn-next').style.display = "none"; document.getElementById('g2-btn-start').style.display = "block";
+            // clear hidden class just in case
+            document.getElementById('g2-sec').classList.remove('hidden-num'); document.getElementById('g2-mom').classList.remove('hidden-num');
         }
 
         function g2_hardReset() {
-            g2_scoreAmin = 0; g2_scoreSaraba = 0; document.getElementById('g2-s-amin').textContent = "0"; document.getElementById('g2-s-saraba').textContent = "0";
+            document.getElementById('g2-s-amin').textContent = g2_scoreAmin; document.getElementById('g2-s-saraba').textContent = g2_scoreSaraba;
             g2_next();
         }
 
