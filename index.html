@@ -38,7 +38,6 @@
             position: relative;
         }
 
-        /* faint instrument grid */
         body::before {
             content: "";
             position: fixed; inset: 0;
@@ -59,8 +58,12 @@
             text-align: center;
             box-shadow: 0 30px 70px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04);
             width: 380px;
+            max-height: 88vh;
+            overflow-y: auto;
             z-index: 10;
         }
+        .game-container::-webkit-scrollbar { width: 4px; }
+        .game-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
         .eyebrow {
             font-family: 'Inter', sans-serif;
@@ -106,16 +109,43 @@
         .mode-card h3 { font-family: 'Sora', sans-serif; font-size: 1.02rem; font-weight: 700; margin-bottom: 2px; }
         .mode-card p { font-size: 0.78rem; color: var(--muted); line-height: 1.3; }
 
-        /* ---------- Scoreboard ---------- */
-        .scoreboard { display: flex; gap: 10px; margin-bottom: 16px; }
-        .player {
-            flex: 1; padding: 10px 8px; border-radius: 16px; opacity: 0.45;
-            border: 1px solid var(--line); transition: all 0.3s ease;
-            background: rgba(255,255,255,0.02);
+        /* ---------- Setup screens ---------- */
+        .setup-label { font-family: 'Sora', sans-serif; font-size: 1.05rem; font-weight: 700; margin: 6px 0 18px; }
+        .count-input {
+            width: 120px; padding: 16px; font-family: 'Orbitron', sans-serif; font-size: 2rem; text-align: center;
+            background: rgba(0,0,0,0.35); border: 1px solid var(--line); border-radius: 16px; color: var(--amber);
+            outline: none; margin: 0 auto 22px;
         }
+        .count-input:focus { border-color: var(--amber); }
+        .count-hint { font-size: 0.78rem; color: var(--muted); margin-top: -14px; margin-bottom: 20px; }
+
+        .name-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; text-align: left; max-height: 40vh; overflow-y: auto; padding-right: 4px; }
+        .name-row { display: flex; align-items: center; gap: 10px; }
+        .name-row .seed { width: 26px; height: 26px; flex-shrink: 0; border-radius: 8px; background: rgba(67,217,255,0.12); border: 1px solid rgba(67,217,255,0.3); display: flex; align-items: center; justify-content: center; font-family: 'Orbitron'; font-size: 0.72rem; color: var(--cyan); }
+        .name-row input { flex: 1; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255,255,255,0.03); color: var(--ink); font-family: 'Inter'; font-size: 0.92rem; outline: none; }
+        .name-row input:focus { border-color: var(--cyan); }
+
+        .primary-btn {
+            background: linear-gradient(135deg, var(--cyan), #0284c7); color: #06121c;
+            padding: 14px; border: none; border-radius: 16px; font-family: 'Sora'; font-weight: 700;
+            font-size: 0.98rem; cursor: pointer; box-shadow: 0 6px 16px rgba(67,217,255,0.3); width: 100%;
+        }
+        .primary-btn:active { transform: scale(0.98); }
+
+        /* ---------- Round label ---------- */
+        .round-label {
+            display: inline-block; font-family: 'Sora', sans-serif; font-size: 0.7rem; font-weight: 700;
+            letter-spacing: 1.5px; text-transform: uppercase; color: var(--amber);
+            background: rgba(255,176,32,0.1); border: 1px solid rgba(255,176,32,0.3);
+            padding: 5px 12px; border-radius: 20px; margin-bottom: 12px;
+        }
+
+        /* ---------- Scoreboard ---------- */
+        .scoreboard { display: flex; gap: 10px; margin-bottom: 14px; }
+        .player { flex: 1; padding: 10px 8px; border-radius: 16px; opacity: 0.45; border: 1px solid var(--line); transition: all 0.3s ease; background: rgba(255,255,255,0.02); }
         .player.active { opacity: 1; background: rgba(67,217,255,0.08); border-color: rgba(67,217,255,0.4); box-shadow: 0 0 18px rgba(67,217,255,0.15); }
         .player.active.alt { background: rgba(255,61,129,0.08); border-color: rgba(255,61,129,0.4); box-shadow: 0 0 18px rgba(255,61,129,0.15); }
-        .player-name { font-family: 'Sora', sans-serif; font-size: 0.85rem; font-weight: 600; color: #cbd5e1; margin-bottom: 4px; letter-spacing: 0.3px; }
+        .player-name { font-family: 'Sora', sans-serif; font-size: 0.82rem; font-weight: 600; color: #cbd5e1; margin-bottom: 4px; letter-spacing: 0.2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .player-score { font-family: 'Orbitron', sans-serif; font-size: 1.4rem; color: var(--amber); text-shadow: 0 0 12px rgba(255,176,32,0.4); }
 
         .target-box { font-size: 0.95rem; color: var(--muted); }
@@ -123,7 +153,7 @@
         .status-msg { font-size: 0.88rem; color: var(--cyan); margin-top: 8px; min-height: 38px; font-weight: 500; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.35; }
 
         /* ---------- Bezel / dial display ---------- */
-        .dial-wrap { position: relative; width: 220px; height: 220px; margin: 18px auto 10px; }
+        .dial-wrap { position: relative; width: 220px; height: 220px; margin: 16px auto 10px; }
         .dial-ring {
             position: absolute; inset: 0; border-radius: 50%;
             background: repeating-conic-gradient(rgba(255,255,255,0.09) 0deg 2deg, transparent 2deg 30deg);
@@ -159,10 +189,10 @@
         .btn-next { background: #232c40; color: var(--ink); }
         .btn-submit { background: linear-gradient(135deg, var(--amber), #ff8c00); color: #201200; box-shadow: 0 6px 16px rgba(255,176,32,0.3); }
 
-        .extra-controls { display: flex; gap: 10px; margin-top: 14px; justify-content: center; }
+        .extra-controls { display: flex; gap: 10px; margin-top: 14px; justify-content: center; flex-wrap: wrap; }
         .extra-controls button {
             background: rgba(255,255,255,0.03); color: var(--muted);
-            font-size: 0.78rem; padding: 9px 16px; border: 1px solid var(--line);
+            font-size: 0.76rem; padding: 9px 14px; border: 1px solid var(--line);
             border-radius: 10px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.15s ease;
         }
         .extra-controls button:hover { background: rgba(255,255,255,0.07); color: var(--ink); }
@@ -177,36 +207,49 @@
         .guess-inputs input::placeholder { color: #4b5568; font-family: 'Inter'; font-size: 0.7rem; }
 
         /* ---------- Celebration ---------- */
-        .celebration-overlay { position: fixed; inset: 0; background: rgba(6,9,16,0.95); display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+        .celebration-overlay { position: fixed; inset: 0; background: rgba(6,9,16,0.95); display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; padding: 20px; }
         .celebration-overlay.active { opacity: 1; pointer-events: all; }
-        .celebration-box { background: linear-gradient(135deg, rgba(67,217,255,0.08), rgba(255,61,129,0.08)); border: 1px solid rgba(67,217,255,0.4); padding: 42px; border-radius: 26px; text-align: center; transform: scale(0.5); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 0 60px rgba(67,217,255,0.25); }
+        .celebration-box { background: linear-gradient(135deg, rgba(67,217,255,0.08), rgba(255,61,129,0.08)); border: 1px solid rgba(67,217,255,0.4); padding: 38px 32px; border-radius: 26px; text-align: center; transform: scale(0.5); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 0 60px rgba(67,217,255,0.25); max-width: 360px; }
         .celebration-overlay.active .celebration-box { transform: scale(1); }
-        .winner-title { font-family: 'Sora', sans-serif; font-size: 2rem; font-weight: 800; color: var(--ink); margin-bottom: 8px; }
+        .winner-title { font-family: 'Sora', sans-serif; font-size: 1.7rem; font-weight: 800; color: var(--ink); margin-bottom: 8px; line-height: 1.3; }
         .winner-title .glow { color: var(--amber); text-shadow: 0 0 20px rgba(255,176,32,0.6); }
-        .winner-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 22px; }
-        .play-again-btn { background: linear-gradient(135deg, var(--amber), #ff8c00); color: #1c1000; padding: 14px 28px; font-size: 1.02rem; border: none; border-radius: 16px; cursor: pointer; font-weight: 700; box-shadow: 0 0 24px rgba(255,176,32,0.35); font-family: 'Sora'; }
+        .winner-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 22px; line-height: 1.4; }
+        .play-again-btn { background: linear-gradient(135deg, var(--amber), #ff8c00); color: #1c1000; padding: 14px 28px; font-size: 1.02rem; border: none; border-radius: 16px; cursor: pointer; font-weight: 700; box-shadow: 0 0 24px rgba(255,176,32,0.35); font-family: 'Sora'; width: 100%; }
 
         .confetti { position: fixed; width: 9px; height: 9px; top: -10px; z-index: 999; animation: fall linear forwards; }
         @keyframes fall { to { transform: translateY(100vh) rotate(720deg); } }
+
+        /* ---------- Bracket overlay ---------- */
+        .bracket-overlay { position: fixed; inset: 0; background: rgba(6,9,16,0.92); z-index: 900; display: none; flex-direction: column; align-items: center; padding: 40px 16px; overflow-y: auto; }
+        .bracket-overlay.active { display: flex; }
+        .bracket-title { font-family: 'Sora'; font-weight: 800; font-size: 1.3rem; margin-bottom: 4px; }
+        .bracket-sub { color: var(--muted); font-size: 0.8rem; margin-bottom: 20px; }
+        .bracket-round { width: 100%; max-width: 340px; margin-bottom: 18px; }
+        .bracket-round-title { font-size: 0.7rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--cyan); font-weight: 700; margin-bottom: 8px; }
+        .bracket-match { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; font-size: 0.85rem; }
+        .bracket-match .bm-name.won { color: var(--amber); font-weight: 700; }
+        .bracket-match .bm-name.tbd { color: #4b5568; font-style: italic; }
+        .bracket-match .vs { color: #4b5568; font-size: 0.7rem; margin: 0 8px; }
+        .bracket-close { margin-top: 6px; background: rgba(255,255,255,0.06); border: 1px solid var(--line); color: var(--ink); padding: 12px 24px; border-radius: 14px; cursor: pointer; font-family: 'Sora'; font-weight: 700; }
     </style>
 </head>
 <body>
 
-    <div class="game-container">
+    <div class="game-container" id="game-container">
 
         <div id="screen-menu" class="screen active">
-            <div class="eyebrow">Precision Timing Duel</div>
+            <div class="eyebrow">Precision Timing Cup</div>
             <h1 class="epic-title">Stay Focused<span class="dot">.</span></h1>
             <p class="menu-sub">Pick your challenge</p>
 
-            <div class="mode-card" onclick="openGame1()">
+            <div class="mode-card" onclick="selectGame(1)">
                 <div class="icon">🎯</div>
                 <div>
                     <h3>Target Lock</h3>
                     <p>A target time is set. Stop the counter as close to it as you can.</p>
                 </div>
             </div>
-            <div class="mode-card alt" onclick="openGame2()">
+            <div class="mode-card alt" onclick="selectGame(2)">
                 <div class="icon">🎧</div>
                 <div>
                     <h3>Blind Call</h3>
@@ -215,14 +258,34 @@
             </div>
         </div>
 
+        <div id="screen-setup-count" class="screen">
+            <div class="eyebrow">Step 1 of 2</div>
+            <h1 class="epic-title" style="font-size:1.5rem;">Build the Cup 🏆</h1>
+            <p class="setup-label">How many players?</p>
+            <input type="number" id="player-count-input" class="count-input" min="2" max="32" value="2">
+            <div class="count-hint">Single elimination — one loss and you're out</div>
+            <button class="primary-btn" onclick="confirmCount()">Continue</button>
+            <button class="back-btn" onclick="backToMenu()">Back to menu</button>
+        </div>
+
+        <div id="screen-setup-names" class="screen">
+            <div class="eyebrow">Step 2 of 2</div>
+            <h1 class="epic-title" style="font-size:1.5rem;">Name your players</h1>
+            <p class="setup-label" style="margin-top:0;">Bracket seeding is random</p>
+            <div class="name-list" id="name-list"></div>
+            <button class="primary-btn" onclick="startCup()">Start the Cup 🏆</button>
+            <button class="back-btn" onclick="showScreen('screen-setup-count')">Back</button>
+        </div>
+
         <div id="screen-game1" class="screen">
+            <div class="round-label" id="g1-round-label">Round 1</div>
             <div class="scoreboard">
-                <div class="player active" id="g1-p-amin"><div class="player-name">Amin</div><div class="player-score" id="g1-s-amin">0</div></div>
-                <div class="player" id="g1-p-saraba"><div class="player-name">Saraba</div><div class="player-score" id="g1-s-saraba">0</div></div>
+                <div class="player active" id="g1-p-a"><div class="player-name" id="g1-name-a">Player 1</div><div class="player-score" id="g1-s-a">0</div></div>
+                <div class="player" id="g1-p-b"><div class="player-name" id="g1-name-b">Player 2</div><div class="player-score" id="g1-s-b">0</div></div>
             </div>
             <div class="game-info">
                 <div class="target-box">Target: stop at <span class="target-number" id="g1-target">00:00</span></div>
-                <div class="status-msg" id="g1-status">Amin's turn — press Start!</div>
+                <div class="status-msg" id="g1-status">Player 1's turn — press Start!</div>
             </div>
 
             <div class="dial-wrap">
@@ -239,22 +302,23 @@
             <div class="controls">
                 <button class="btn btn-start" id="g1-btn-start" onclick="g1_start()">Start</button>
                 <button class="btn btn-stop" id="g1-btn-stop" style="display:none;" onclick="g1_stop()">Stop</button>
-                <button class="btn btn-next" id="g1-btn-next" style="display:none;" onclick="g1_next()">New Round</button>
+                <button class="btn btn-next" id="g1-btn-next" style="display:none;" onclick="g1_next()">Next Point</button>
             </div>
             <div class="extra-controls">
                 <button onclick="g1_manualChangeTarget()">Change target 🎯</button>
-                <button onclick="g1_manualResetScores()">Reset score 🔄</button>
+                <button onclick="openBracket()">View bracket 📋</button>
             </div>
-            <button class="back-btn" onclick="backToMenu()">Back to menu</button>
+            <button class="back-btn" onclick="backToMenu()">Quit the cup</button>
         </div>
 
         <div id="screen-game2" class="screen">
+            <div class="round-label" id="g2-round-label">Round 1</div>
             <div class="scoreboard">
-                <div class="player active alt" id="g2-p-amin"><div class="player-name">Amin</div><div class="player-score" id="g2-s-amin">0</div></div>
-                <div class="player alt" id="g2-p-saraba"><div class="player-name">Saraba</div><div class="player-score" id="g2-s-saraba">0</div></div>
+                <div class="player active alt" id="g2-p-a"><div class="player-name" id="g2-name-a">Player 1</div><div class="player-score" id="g2-s-a">0</div></div>
+                <div class="player alt" id="g2-p-b"><div class="player-name" id="g2-name-b">Player 2</div><div class="player-score" id="g2-s-b">0</div></div>
             </div>
             <div class="game-info">
-                <div class="status-msg" id="g2-status" style="color: var(--magenta);">Amin is calling it!<br>Saraba, run the counter and stop whenever you like</div>
+                <div class="status-msg" id="g2-status" style="color: var(--magenta);">Loading...</div>
             </div>
 
             <div class="dial-wrap">
@@ -269,7 +333,7 @@
             </div>
 
             <div class="guess-box" id="g2-guess-box">
-                <div style="color:var(--amber); font-size:0.85rem; margin-bottom:2px;" id="g2-guess-title">Amin, where do you think it stopped?</div>
+                <div style="color:var(--amber); font-size:0.85rem; margin-bottom:2px;" id="g2-guess-title">Where do you think it stopped?</div>
                 <div class="guess-inputs">
                     <input type="number" id="g2-in-sec" placeholder="secs" min="0" max="99">
                     <span style="font-family:'Orbitron'; font-size:1.4rem; color:#fff;">:</span>
@@ -281,28 +345,35 @@
             <div class="controls" id="g2-controls">
                 <button class="btn btn-start" id="g2-btn-start" onclick="g2_start()">Start (secret)</button>
                 <button class="btn btn-stop" id="g2-btn-stop" style="display:none;" onclick="g2_stop()">Stop (secret)</button>
-                <button class="btn btn-next" id="g2-btn-next" style="display:none;" onclick="g2_next()">New Round</button>
+                <button class="btn btn-next" id="g2-btn-next" style="display:none;" onclick="g2_next()">Next Point</button>
             </div>
 
             <div class="extra-controls">
-                <button onclick="g2_manualResetScores()">Reset score 🔄</button>
+                <button onclick="openBracket()">View bracket 📋</button>
             </div>
 
-            <button class="back-btn" onclick="backToMenu()">Back to menu</button>
+            <button class="back-btn" onclick="backToMenu()">Quit the cup</button>
         </div>
 
     </div>
 
     <div class="celebration-overlay" id="celebration-overlay">
         <div class="celebration-box">
-            <div class="winner-title" id="winner-name">🎉 <span class="glow">Amin</span> wins! 🎉</div>
-            <div class="winner-sub">First to 3 points</div>
-            <button class="play-again-btn" onclick="fullReset()">Play a new match 🎮</button>
+            <div class="winner-title" id="winner-name">🎉 <span class="glow">Player 1</span> wins! 🎉</div>
+            <div class="winner-sub" id="winner-sub">First to 3 points</div>
+            <button class="play-again-btn" id="celebration-btn" onclick="continueTournament()">Next match ▶</button>
         </div>
     </div>
 
+    <div class="bracket-overlay" id="bracket-overlay">
+        <div class="bracket-title">Cup Bracket 🏆</div>
+        <div class="bracket-sub" id="bracket-sub">Single elimination</div>
+        <div id="bracket-rounds"></div>
+        <button class="bracket-close" onclick="closeBracket()">Close</button>
+    </div>
+
     <script>
-        // --- Shared Logic ---
+        // ================= Shared audio / UI helpers =================
         let audioCtx;
         function playSound(freq1, freq2, type = 'sine', duration = 0.15) {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -336,26 +407,226 @@
             }
         }
 
-        function triggerWin(winnerName) {
+        // ================= Tournament / Cup engine =================
+        let TN = {
+            gameType: 1,
+            players: [],
+            rounds: [],      // rounds[r] = [{p1, p2, winner}] indices into players, null = empty/bye
+            curRound: -1,
+            curMatch: -1,
+            curP1: -1,
+            curP2: -1
+        };
+
+        function selectGame(n) {
+            TN.gameType = n;
+            document.getElementById('player-count-input').value = 2;
+            showScreen('screen-setup-count');
+        }
+
+        function confirmCount() {
+            let n = parseInt(document.getElementById('player-count-input').value) || 2;
+            n = Math.max(2, Math.min(32, n));
+            const list = document.getElementById('name-list');
+            list.innerHTML = '';
+            for (let i = 0; i < n; i++) {
+                const row = document.createElement('div');
+                row.className = 'name-row';
+                row.innerHTML = `<div class="seed">${i + 1}</div><input type="text" id="pname-${i}" maxlength="16" placeholder="Player ${i + 1}">`;
+                list.appendChild(row);
+            }
+            showScreen('screen-setup-names');
+        }
+
+        function shuffleArr(arr) {
+            const a = arr.slice();
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function nextPow2(n) { let p = 1; while (p < n) p *= 2; return p; }
+
+        function buildBracket(names) {
+            const n = names.length;
+            const size = nextPow2(n);
+            const order = shuffleArr([...Array(n).keys()]);
+            while (order.length < size) order.push(null); // byes
+
+            const rounds = [];
+            const round0 = [];
+            for (let i = 0; i < size / 2; i++) {
+                round0.push({ p1: order[2 * i], p2: order[2 * i + 1], winner: null });
+            }
+            rounds.push(round0);
+            let remaining = size / 2;
+            while (remaining > 1) {
+                remaining = remaining / 2;
+                rounds.push(Array.from({ length: remaining }, () => ({ p1: null, p2: null, winner: null })));
+            }
+            return rounds;
+        }
+
+        function propagateWinner(r, m, winnerIdx) {
+            TN.rounds[r][m].winner = winnerIdx;
+            if (r + 1 < TN.rounds.length) {
+                const slot = m % 2 === 0 ? 'p1' : 'p2';
+                TN.rounds[r + 1][Math.floor(m / 2)][slot] = winnerIdx;
+            }
+        }
+
+        function resolveByes() {
+            const round0 = TN.rounds[0];
+            for (let m = 0; m < round0.length; m++) {
+                const match = round0[m];
+                if (match.p1 === null && match.p2 !== null) propagateWinner(0, m, match.p2);
+                else if (match.p2 === null && match.p1 !== null) propagateWinner(0, m, match.p1);
+            }
+        }
+
+        function findNextMatch() {
+            for (let r = 0; r < TN.rounds.length; r++) {
+                for (let m = 0; m < TN.rounds[r].length; m++) {
+                    const match = TN.rounds[r][m];
+                    if (match.winner === null && match.p1 !== null && match.p2 !== null) {
+                        return { r, m };
+                    }
+                }
+            }
+            return null;
+        }
+
+        function startCup() {
+            const names = [];
+            const inputs = document.querySelectorAll('#name-list input');
+            inputs.forEach((inp, i) => {
+                const v = inp.value.trim();
+                names.push(v || `Player ${i + 1}`);
+            });
+            TN.players = names;
+            TN.rounds = buildBracket(names);
+            resolveByes();
+            launchMatch();
+        }
+
+        function roundLabel(r) {
+            const total = TN.rounds.length;
+            const fromEnd = total - r;
+            if (fromEnd === 1) return 'Final';
+            if (fromEnd === 2) return 'Semifinal';
+            if (fromEnd === 3) return 'Quarterfinal';
+            return `Round ${r + 1}`;
+        }
+
+        function launchMatch() {
+            const next = findNextMatch();
+            if (!next) { showChampion(); return; }
+            TN.curRound = next.r; TN.curMatch = next.m;
+            const match = TN.rounds[next.r][next.m];
+            TN.curP1 = match.p1; TN.curP2 = match.p2;
+            const nameA = TN.players[TN.curP1], nameB = TN.players[TN.curP2];
+            const label = roundLabel(next.r) + (TN.rounds[next.r].length > 1 ? ` · Match ${next.m + 1} of ${TN.rounds[next.r].length}` : '');
+
+            if (TN.gameType === 1) {
+                showScreen('screen-game1');
+                document.getElementById('g1-round-label').textContent = label;
+                document.getElementById('g1-name-a').textContent = nameA;
+                document.getElementById('g1-name-b').textContent = nameB;
+                g1_scoreA = 0; g1_scoreB = 0;
+                document.getElementById('g1-s-a').textContent = '0';
+                document.getElementById('g1-s-b').textContent = '0';
+                g1_next();
+            } else {
+                showScreen('screen-game2');
+                document.getElementById('g2-round-label').textContent = label;
+                document.getElementById('g2-name-a').textContent = nameA;
+                document.getElementById('g2-name-b').textContent = nameB;
+                g2_scoreA = 0; g2_scoreB = 0;
+                document.getElementById('g2-s-a').textContent = '0';
+                document.getElementById('g2-s-b').textContent = '0';
+                g2_next();
+            }
+        }
+
+        function matchWon(letter) {
+            const winnerIdx = letter === 'a' ? TN.curP1 : TN.curP2;
+            propagateWinner(TN.curRound, TN.curMatch, winnerIdx);
+            const winnerName = TN.players[winnerIdx];
+            const next = findNextMatch();
             playSound(600, 2000, 'triangle', 0.5);
             document.getElementById('winner-name').innerHTML = `🎉 <span class="glow">${winnerName}</span> wins! 🎉`;
+            const btn = document.getElementById('celebration-btn');
+            if (next) {
+                document.getElementById('winner-sub').textContent = 'Advances to the next round';
+                btn.textContent = 'Next match ▶';
+                btn.onclick = continueTournament;
+            } else {
+                document.getElementById('winner-sub').textContent = '🏆 Champion of the Cup!';
+                btn.textContent = 'Start a new cup 🎮';
+                btn.onclick = newCup;
+            }
             document.getElementById('celebration-overlay').classList.add('active');
             throwConfetti();
         }
 
-        let activeGame = 0; // 1 or 2
-        function fullReset() {
-            document.getElementById('celebration-overlay').classList.remove('active');
-            if(activeGame === 1) { g1_scoreAmin = 0; g1_scoreSaraba = 0; g1_hardReset(); }
-            else if(activeGame === 2) { g2_scoreAmin = 0; g2_scoreSaraba = 0; g2_hardReset(); }
+        function showChampion() {
+            const champIdx = TN.rounds[TN.rounds.length - 1][0].winner;
+            const champName = TN.players[champIdx];
+            playSound(600, 2000, 'triangle', 0.5);
+            document.getElementById('winner-name').innerHTML = `🏆 <span class="glow">${champName}</span> 🏆`;
+            document.getElementById('winner-sub').textContent = 'Champion of the Cup!';
+            const btn = document.getElementById('celebration-btn');
+            btn.textContent = 'Start a new cup 🎮';
+            btn.onclick = newCup;
+            document.getElementById('celebration-overlay').classList.add('active');
+            throwConfetti();
         }
 
-        // --- Game 1: Target Lock Logic ---
-        let g1_startTime = 0, g1_elapsed = 0, g1_timer;
-        let g1_targetTotal = 0, g1_turn = 'amin', g1_diffAmin = 0, g1_diffSaraba = 0;
-        let g1_scoreAmin = 0, g1_scoreSaraba = 0, g1_isRunning = false;
+        function continueTournament() {
+            document.getElementById('celebration-overlay').classList.remove('active');
+            launchMatch();
+        }
 
-        function openGame1() { activeGame = 1; showScreen('screen-game1'); g1_hardReset(); }
+        function newCup() {
+            document.getElementById('celebration-overlay').classList.remove('active');
+            TN = { gameType: TN.gameType, players: [], rounds: [], curRound: -1, curMatch: -1, curP1: -1, curP2: -1 };
+            showScreen('screen-menu');
+        }
+
+        // ---------- Bracket viewer ----------
+        function openBracket() {
+            const wrap = document.getElementById('bracket-rounds');
+            wrap.innerHTML = '';
+            TN.rounds.forEach((round, r) => {
+                const rDiv = document.createElement('div');
+                rDiv.className = 'bracket-round';
+                const title = document.createElement('div');
+                title.className = 'bracket-round-title';
+                title.textContent = roundLabel(r);
+                rDiv.appendChild(title);
+                round.forEach(match => {
+                    const mDiv = document.createElement('div');
+                    mDiv.className = 'bracket-match';
+                    const nameHtml = (idx, isWinner) => {
+                        if (idx === null) return '<span class="bm-name tbd">TBD</span>';
+                        const cls = (match.winner !== null && match.winner === idx) ? 'bm-name won' : 'bm-name';
+                        return `<span class="${cls}">${TN.players[idx]}</span>`;
+                    };
+                    mDiv.innerHTML = `${nameHtml(match.p1)}<span class="vs">vs</span>${nameHtml(match.p2)}`;
+                    rDiv.appendChild(mDiv);
+                });
+                wrap.appendChild(rDiv);
+            });
+            document.getElementById('bracket-overlay').classList.add('active');
+        }
+        function closeBracket() { document.getElementById('bracket-overlay').classList.remove('active'); }
+
+        // ================= Game 1: Target Lock =================
+        let g1_startTime = 0, g1_elapsed = 0, g1_timer;
+        let g1_targetTotal = 0, g1_turn = 'a', g1_diffA = 0, g1_diffB = 0;
+        let g1_scoreA = 0, g1_scoreB = 0, g1_isRunning = false;
 
         function g1_genTarget() {
             const sec = Math.floor(Math.random() * 5) + 2; const mom = Math.floor(Math.random() * 100);
@@ -368,15 +639,6 @@
             g1_genTarget();
             playSound(800, 1200, 'sine');
             document.getElementById('g1-status').textContent = "Target changed!";
-        }
-
-        function g1_manualResetScores() {
-            if (g1_isRunning) return;
-            g1_scoreAmin = 0; g1_scoreSaraba = 0;
-            document.getElementById('g1-s-amin').textContent = "0";
-            document.getElementById('g1-s-saraba').textContent = "0";
-            g1_next();
-            document.getElementById('g1-status').textContent = "Match reset. Amin's turn!";
         }
 
         function g1_start() {
@@ -398,20 +660,22 @@
             document.getElementById('g1-ring').classList.remove('running');
             g1_elapsed = Date.now() - g1_startTime;
             const diff = Math.abs(Math.floor(g1_elapsed / 10) - g1_targetTotal);
+            const nameA = document.getElementById('g1-name-a').textContent;
+            const nameB = document.getElementById('g1-name-b').textContent;
 
-            if (g1_turn === 'amin') {
-                g1_diffAmin = diff; document.getElementById('g1-status').textContent = `Amin missed by ${diff}. Saraba's turn!`;
-                g1_turn = 'saraba'; document.getElementById('g1-p-amin').classList.remove('active'); document.getElementById('g1-p-saraba').classList.add('active');
-                document.getElementById('g1-btn-start').textContent = "Start (Saraba)"; document.getElementById('g1-btn-start').style.display = "block";
+            if (g1_turn === 'a') {
+                g1_diffA = diff; document.getElementById('g1-status').textContent = `${nameA} missed by ${diff}. ${nameB}'s turn!`;
+                g1_turn = 'b'; document.getElementById('g1-p-a').classList.remove('active'); document.getElementById('g1-p-b').classList.add('active');
+                document.getElementById('g1-btn-start').textContent = `Start (${nameB})`; document.getElementById('g1-btn-start').style.display = "block";
                 document.getElementById('g1-btn-stop').style.display = "none";
                 document.getElementById('g1-sec').textContent = "00"; document.getElementById('g1-mom').textContent = "00"; g1_elapsed = 0;
             } else {
-                g1_diffSaraba = diff; let res = "", matchWin = null;
-                if (g1_diffAmin < g1_diffSaraba) { res = `Amin wins the round! (off by ${g1_diffAmin})`; g1_scoreAmin++; document.getElementById('g1-s-amin').textContent = g1_scoreAmin; playSound(800, 1500, 'triangle'); if(g1_scoreAmin >= 3) matchWin = "Amin"; }
-                else if (g1_diffSaraba < g1_diffAmin) { res = `Saraba wins the round! (off by ${g1_diffSaraba})`; g1_scoreSaraba++; document.getElementById('g1-s-saraba').textContent = g1_scoreSaraba; playSound(800, 1500, 'triangle'); if(g1_scoreSaraba >= 3) matchWin = "Saraba"; }
-                else { res = `Tie! Both off by ${g1_diffAmin}`; }
+                g1_diffB = diff; let res = "", roundWinner = null;
+                if (g1_diffA < g1_diffB) { res = `${nameA} wins the point! (off by ${g1_diffA})`; g1_scoreA++; document.getElementById('g1-s-a').textContent = g1_scoreA; playSound(800, 1500, 'triangle'); if (g1_scoreA >= 3) roundWinner = 'a'; }
+                else if (g1_diffB < g1_diffA) { res = `${nameB} wins the point! (off by ${g1_diffB})`; g1_scoreB++; document.getElementById('g1-s-b').textContent = g1_scoreB; playSound(800, 1500, 'triangle'); if (g1_scoreB >= 3) roundWinner = 'b'; }
+                else { res = `Tie! Both off by ${g1_diffA}`; }
 
-                if (matchWin) { setTimeout(() => triggerWin(matchWin), 500); }
+                if (roundWinner) { setTimeout(() => matchWon(roundWinner), 500); }
                 else {
                     document.getElementById('g1-status').textContent = res;
                     document.getElementById('g1-btn-start').style.display = "none"; document.getElementById('g1-btn-stop').style.display = "none";
@@ -421,34 +685,19 @@
         }
 
         function g1_next() {
-            playSound(600, 100, 'triangle'); g1_genTarget(); g1_turn = 'amin';
-            document.getElementById('g1-p-saraba').classList.remove('active'); document.getElementById('g1-p-amin').classList.add('active');
-            document.getElementById('g1-status').textContent = "Amin's turn — press Start!";
+            playSound(600, 100, 'triangle'); g1_genTarget(); g1_turn = 'a';
+            document.getElementById('g1-p-b').classList.remove('active'); document.getElementById('g1-p-a').classList.add('active');
+            const nameA = document.getElementById('g1-name-a').textContent;
+            document.getElementById('g1-status').textContent = `${nameA}'s turn — press Start!`;
             document.getElementById('g1-sec').textContent = "00"; document.getElementById('g1-mom').textContent = "00"; g1_elapsed = 0;
-            document.getElementById('g1-btn-next').style.display = "none"; document.getElementById('g1-btn-start').textContent = "Start (Amin)"; document.getElementById('g1-btn-start').style.display = "block";
+            document.getElementById('g1-btn-next').style.display = "none"; document.getElementById('g1-btn-start').textContent = `Start (${nameA})`; document.getElementById('g1-btn-start').style.display = "block";
         }
 
-        function g1_hardReset() {
-            document.getElementById('g1-s-amin').textContent = g1_scoreAmin; document.getElementById('g1-s-saraba').textContent = g1_scoreSaraba;
-            g1_next();
-        }
-
-        // --- Game 2: Blind Call Logic ---
+        // ================= Game 2: Blind Call =================
         let g2_startTime = 0, g2_elapsed = 0, g2_timer;
-        let g2_actualTotal = 0, g2_turn = 'amin', g2_diffAmin = 0, g2_diffSaraba = 0;
-        let g2_scoreAmin = 0, g2_scoreSaraba = 0;
+        let g2_actualTotal = 0, g2_turn = 'a', g2_diffA = 0, g2_diffB = 0;
+        let g2_scoreA = 0, g2_scoreB = 0;
         let g2_isRunning = false;
-
-        function openGame2() { activeGame = 2; showScreen('screen-game2'); g2_hardReset(); }
-
-        function g2_manualResetScores() {
-            if (g2_isRunning) return;
-            g2_scoreAmin = 0; g2_scoreSaraba = 0;
-            document.getElementById('g2-s-amin').textContent = "0";
-            document.getElementById('g2-s-saraba').textContent = "0";
-            g2_next();
-            document.getElementById('g2-status').innerHTML = "Match reset.<br>Amin is calling it!";
-        }
 
         function g2_start() {
             playSound(1200, 300); g2_isRunning = true; g2_startTime = Date.now() - g2_elapsed; g2_timer = setInterval(g2_update, 10);
@@ -467,9 +716,10 @@
             document.getElementById('g2-ring').classList.remove('running');
             document.getElementById('g2-btn-stop').style.display = "none";
 
+            const nameA = document.getElementById('g2-name-a').textContent;
+            const nameB = document.getElementById('g2-name-b').textContent;
             document.getElementById('g2-guess-box').style.display = "flex";
-            if(g2_turn === 'amin') document.getElementById('g2-guess-title').textContent = "Amin, where do you think it stopped?";
-            else document.getElementById('g2-guess-title').textContent = "Saraba, where do you think it stopped?";
+            document.getElementById('g2-guess-title').textContent = `${g2_turn === 'a' ? nameA : nameB}, where do you think it stopped?`;
             document.getElementById('g2-status').innerHTML = "Waiting for the guess...";
         }
 
@@ -478,6 +728,8 @@
             let mom = parseInt(document.getElementById('g2-in-mom').value) || 0;
             let guessTotal = (sec * 100) + mom;
             let diff = Math.abs(g2_actualTotal - guessTotal);
+            const nameA = document.getElementById('g2-name-a').textContent;
+            const nameB = document.getElementById('g2-name-b').textContent;
 
             document.getElementById('g2-sec').classList.remove('hidden-num'); document.getElementById('g2-mom').classList.remove('hidden-num');
             document.getElementById('g2-sec').textContent = Math.floor(g2_elapsed / 1000).toString().padStart(2, '0');
@@ -485,19 +737,18 @@
             document.getElementById('g2-guess-box').style.display = "none";
             document.getElementById('g2-in-sec').value = ''; document.getElementById('g2-in-mom').value = '';
 
-            if (g2_turn === 'amin') {
-                g2_diffAmin = diff; document.getElementById('g2-status').innerHTML = `Real number revealed! Amin was off by ${diff}.<br>Saraba's turn to call it!`;
-                g2_turn = 'saraba'; document.getElementById('g2-p-amin').classList.remove('active'); document.getElementById('g2-p-saraba').classList.add('active');
+            if (g2_turn === 'a') {
+                g2_diffA = diff; document.getElementById('g2-status').innerHTML = `Real number revealed! ${nameA} was off by ${diff}.<br>${nameB}'s turn to call it!`;
+                g2_turn = 'b'; document.getElementById('g2-p-a').classList.remove('active'); document.getElementById('g2-p-b').classList.add('active');
                 document.getElementById('g2-btn-start').style.display = "block";
                 g2_elapsed = 0;
-
             } else {
-                g2_diffSaraba = diff; let res = "", matchWin = null;
-                if (g2_diffAmin < g2_diffSaraba) { res = `Amin wins the call! (Amin off by ${g2_diffAmin}, Saraba off by ${g2_diffSaraba})`; g2_scoreAmin++; document.getElementById('g2-s-amin').textContent = g2_scoreAmin; playSound(800, 1500, 'triangle'); if(g2_scoreAmin >= 3) matchWin = "Amin"; }
-                else if (g2_diffSaraba < g2_diffAmin) { res = `Saraba wins the call! (Amin off by ${g2_diffAmin}, Saraba off by ${g2_diffSaraba})`; g2_scoreSaraba++; document.getElementById('g2-s-saraba').textContent = g2_scoreSaraba; playSound(800, 1500, 'triangle'); if(g2_scoreSaraba >= 3) matchWin = "Saraba"; }
-                else { res = `Legendary tie! Both off by ${g2_diffAmin}`; }
+                g2_diffB = diff; let res = "", roundWinner = null;
+                if (g2_diffA < g2_diffB) { res = `${nameA} wins the call! (${nameA} off by ${g2_diffA}, ${nameB} off by ${g2_diffB})`; g2_scoreA++; document.getElementById('g2-s-a').textContent = g2_scoreA; playSound(800, 1500, 'triangle'); if (g2_scoreA >= 3) roundWinner = 'a'; }
+                else if (g2_diffB < g2_diffA) { res = `${nameB} wins the call! (${nameA} off by ${g2_diffA}, ${nameB} off by ${g2_diffB})`; g2_scoreB++; document.getElementById('g2-s-b').textContent = g2_scoreB; playSound(800, 1500, 'triangle'); if (g2_scoreB >= 3) roundWinner = 'b'; }
+                else { res = `Legendary tie! Both off by ${g2_diffA}`; }
 
-                if (matchWin) { setTimeout(() => triggerWin(matchWin), 2000); }
+                if (roundWinner) { setTimeout(() => matchWon(roundWinner), 2000); }
                 else {
                     document.getElementById('g2-status').innerHTML = res;
                     document.getElementById('g2-btn-next').style.display = "block";
@@ -506,17 +757,14 @@
         }
 
         function g2_next() {
-            playSound(600, 100, 'triangle'); g2_turn = 'amin';
-            document.getElementById('g2-p-saraba').classList.remove('active'); document.getElementById('g2-p-amin').classList.add('active');
-            document.getElementById('g2-status').innerHTML = "Amin is calling it!<br>Saraba, run the counter and stop whenever you like";
+            playSound(600, 100, 'triangle'); g2_turn = 'a';
+            document.getElementById('g2-p-b').classList.remove('active'); document.getElementById('g2-p-a').classList.add('active');
+            const nameA = document.getElementById('g2-name-a').textContent;
+            const nameB = document.getElementById('g2-name-b').textContent;
+            document.getElementById('g2-status').innerHTML = `${nameA} is calling it!<br>${nameB}, run the counter and stop whenever you like`;
             document.getElementById('g2-sec').textContent = "00"; document.getElementById('g2-mom').textContent = "00"; g2_elapsed = 0;
             document.getElementById('g2-btn-next').style.display = "none"; document.getElementById('g2-btn-start').style.display = "block";
             document.getElementById('g2-sec').classList.remove('hidden-num'); document.getElementById('g2-mom').classList.remove('hidden-num');
-        }
-
-        function g2_hardReset() {
-            document.getElementById('g2-s-amin').textContent = g2_scoreAmin; document.getElementById('g2-s-saraba').textContent = g2_scoreSaraba;
-            g2_next();
         }
 
         // PWA Setup
