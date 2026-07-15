@@ -6,7 +6,7 @@
     <title>Stay focused</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#090d16">
-    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3233/3233068.png">
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3240/3240638.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@700&family=Tajawal:wght@500;700&display=swap');
@@ -21,22 +21,24 @@
             color: #f8fafc;
             font-family: 'Tajawal', sans-serif;
             overflow: hidden;
+            position: relative;
         }
 
         .game-container {
             background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(20px);
             border: 2px solid rgba(255, 255, 255, 0.05);
-            padding: 30px;
+            padding: 25px 30px;
             border-radius: 40px;
             text-align: center;
             box-shadow: 0 30px 60px rgba(0,0,0,0.8);
             width: 380px;
+            z-index: 10;
         }
 
         .epic-title {
             font-family: 'Poppins', sans-serif;
-            font-size: 2.2rem;
+            font-size: 2rem;
             background: linear-gradient(45deg, #ffd700, #ff007f);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -46,99 +48,109 @@
             letter-spacing: 2px;
         }
 
+        /* Scoreboard */
         .scoreboard {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             background: rgba(0,0,0,0.3);
             border-radius: 20px;
             padding: 10px;
         }
-
         .player {
-            flex: 1;
-            padding: 10px;
-            border-radius: 15px;
-            transition: all 0.3s ease;
-            opacity: 0.5;
+            flex: 1; padding: 10px; border-radius: 15px;
+            transition: all 0.3s ease; opacity: 0.5;
         }
-
         .player.active {
             opacity: 1;
             background: rgba(56, 189, 248, 0.2);
             border: 1px solid rgba(56, 189, 248, 0.5);
             box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
         }
-
-        .player-name {
-            font-size: 1rem;
-            font-weight: 700;
-            color: #cbd5e1;
-            margin-bottom: 5px;
-        }
-
+        .player-name { font-size: 1rem; font-weight: 700; color: #cbd5e1; margin-bottom: 5px; }
         .player-score {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.5rem;
-            color: #ffd700;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            font-family: 'Orbitron', sans-serif; font-size: 1.5rem;
+            color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
         }
 
-        .game-info { margin-bottom: 15px; }
+        /* Game Info */
+        .game-info { margin-bottom: 10px; }
         .target-box { font-size: 1.1rem; color: #94a3b8; }
         #target-number {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.8rem;
-            color: #ff007f;
-            font-weight: 700;
-            margin: 0 5px;
-            text-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
-            letter-spacing: 2px;
+            font-family: 'Orbitron', sans-serif; font-size: 1.8rem;
+            color: #ff007f; font-weight: 700; margin: 0 5px;
+            text-shadow: 0 0 10px rgba(255, 0, 127, 0.4); letter-spacing: 2px;
         }
+        .status-msg { font-size: 0.9rem; color: #38bdf8; margin-top: 5px; height: 20px; font-weight: 600; }
 
-        .status-msg {
-            font-size: 0.9rem;
-            color: #38bdf8;
-            margin-top: 10px;
-            height: 20px;
-            font-weight: 600;
-        }
-
+        /* Display */
         .display {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 3.5rem;
-            margin: 20px 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            direction: ltr; 
+            font-family: 'Orbitron', sans-serif; font-size: 3.5rem;
+            margin: 15px 0; display: flex; justify-content: center;
+            align-items: center; gap: 15px; direction: ltr; 
         }
-
         .unit { display: flex; flex-direction: column; align-items: center; }
         .unit-label { font-family: 'Poppins', sans-serif; font-size: 0.65rem; color: #64748b; text-transform: uppercase; margin-top: 5px; }
-
         #seconds { color: #38bdf8; }
         #moments { color: #ff007f; }
         .separator { color: #cbd5e1; padding-bottom: 15px; }
 
-        .controls { display: flex; gap: 10px; margin-top: 20px; }
+        /* Controls */
+        .controls { display: flex; gap: 10px; margin-top: 15px; }
         button {
-            padding: 15px;
-            flex: 1;
-            border: none;
-            border-radius: 20px;
-            font-weight: 700;
-            font-family: 'Tajawal', sans-serif;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: transform 0.1s, box-shadow 0.2s;
+            padding: 12px; flex: 1; border: none; border-radius: 20px;
+            font-weight: 700; font-family: 'Tajawal', sans-serif; font-size: 1rem;
+            cursor: pointer; transition: transform 0.1s, box-shadow 0.2s;
         }
         button:active { transform: scale(0.95); }
-        
         #startBtn { background: linear-gradient(135deg, #38bdf8, #0284c7); color: #090d16; box-shadow: 0 5px 15px rgba(56, 189, 248, 0.4); }
         #pauseBtn { background: linear-gradient(135deg, #f43f5e, #be123c); color: white; display: none; box-shadow: 0 5px 15px rgba(244, 63, 94, 0.4); }
         #nextBtn { background: #334155; color: white; display: none; }
+
+        /* Extra Controls */
+        .extra-controls { display: flex; gap: 10px; margin-top: 15px; }
+        .extra-controls button {
+            background: rgba(255,255,255,0.05); color: #cbd5e1;
+            font-size: 0.85rem; padding: 10px; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .extra-controls button:hover { background: rgba(255,255,255,0.1); color: white; }
+
+        /* Celebration Animation Overlay */
+        .celebration-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(9, 13, 22, 0.95);
+            display: flex; justify-content: center; align-items: center;
+            flex-direction: column; z-index: 1000;
+            opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
+        }
+        .celebration-overlay.active { opacity: 1; pointer-events: all; }
+        
+        .celebration-box {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(255, 0, 127, 0.1));
+            border: 2px solid #38bdf8; padding: 40px; border-radius: 30px;
+            text-align: center; transform: scale(0.5); 
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 50px rgba(56, 189, 248, 0.4);
+        }
+        .celebration-overlay.active .celebration-box { transform: scale(1); }
+        
+        .winner-title {
+            font-family: 'Tajawal', sans-serif; font-size: 2.5rem;
+            background: linear-gradient(45deg, #ffd700, #ff007f, #38bdf8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 20px; font-weight: 700; text-shadow: 0 0 20px rgba(255,0,127,0.5);
+        }
+        .play-again-btn {
+            background: linear-gradient(135deg, #ffd700, #ff8c00); color: #090d16;
+            padding: 15px 30px; font-size: 1.2rem; margin-top: 15px; box-shadow: 0 0 20px rgba(255,215,0,0.4);
+        }
+
+        /* Confetti Elements */
+        .confetti {
+            position: fixed; width: 10px; height: 10px; top: -10px; z-index: 999;
+            animation: fall linear forwards;
+        }
+        @keyframes fall { to { transform: translateY(100vh) rotate(720deg); } }
     </style>
 </head>
 <body>
@@ -179,6 +191,20 @@
             <button id="pauseBtn" onclick="handlePause()">وقّف</button>
             <button id="nextBtn" onclick="nextRound()">جولة جديدة</button>
         </div>
+
+        <div class="extra-controls">
+            <button id="changeTargetBtn" onclick="manualChangeTarget()">تغيير الهدف 🎯</button>
+            <button id="resetScoreBtn" onclick="manualResetScores()">تصفير النتائج 🔄</button>
+        </div>
+    </div>
+
+    <!-- Celebration Overlay -->
+    <div class="celebration-overlay" id="celebration-overlay">
+        <div class="celebration-box">
+            <div class="winner-title" id="winner-name">🎉 فوز أمين! 🎉</div>
+            <p style="color: #cbd5e1; font-size: 1.1rem; margin-bottom: 20px;">أول من وصل لـ 3 نقاط</p>
+            <button class="play-again-btn" onclick="fullReset()">العب ماتش جديد 🎮</button>
+        </div>
     </div>
 
     <script>
@@ -186,16 +212,14 @@
         const sDisplay = document.getElementById("seconds"), mDisplay = document.getElementById("moments");
         const startBtn = document.getElementById("startBtn"), pauseBtn = document.getElementById("pauseBtn"), nextBtn = document.getElementById("nextBtn");
         const statusMsg = document.getElementById("status-msg"), targetDisplay = document.getElementById("target-number");
-        
-        const playerAmin = document.getElementById("player-amin");
-        const playerSaraba = document.getElementById("player-saraba");
-        const scoreAminDisplay = document.getElementById("score-amin");
-        const scoreSarabaDisplay = document.getElementById("score-saraba");
+        const playerAmin = document.getElementById("player-amin"), playerSaraba = document.getElementById("player-saraba");
+        const scoreAminDisplay = document.getElementById("score-amin"), scoreSarabaDisplay = document.getElementById("score-saraba");
 
         let audioCtx;
         let targetTotalMoments = 0; 
         let turn = 'amin'; 
         let aminDiff = 0, sarabaDiff = 0, scoreAmin = 0, scoreSaraba = 0;
+        let isRunning = false;
 
         function playSound(freq1, freq2, type = 'sine') {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -210,13 +234,55 @@
             osc.start(); osc.stop(audioCtx.currentTime + 0.15);
         }
 
+        // إنشاء هدف جديد (بين 2 و 6 ثواني)
         function generateTarget() {
-            const targetSeconds = Math.floor(Math.random() * 8) + 3; 
+            const targetSeconds = Math.floor(Math.random() * 5) + 2; 
             const targetMoments = Math.floor(Math.random() * 100); 
             targetTotalMoments = (targetSeconds * 100) + targetMoments; 
             targetDisplay.textContent = targetSeconds.toString().padStart(2, '0') + ":" + targetMoments.toString().padStart(2, '0');
         }
         generateTarget();
+
+        function manualChangeTarget() {
+            if (isRunning) return; // منع التغيير أثناء اللعب
+            generateTarget();
+            playSound(800, 1200, 'sine');
+            statusMsg.textContent = "تم تغيير الهدف!";
+        }
+
+        function manualResetScores() {
+            if (isRunning) return;
+            scoreAmin = 0; scoreSaraba = 0;
+            scoreAminDisplay.textContent = "0"; scoreSarabaDisplay.textContent = "0";
+            nextRound();
+            statusMsg.textContent = "تم تصفير الماتش. دور أمين!";
+        }
+
+        function throwConfetti() {
+            const colors = ['#38bdf8', '#ff007f', '#ffd700', '#10b981'];
+            for (let i = 0; i < 80; i++) {
+                let conf = document.createElement('div');
+                conf.className = 'confetti';
+                conf.style.left = Math.random() * 100 + 'vw';
+                conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                conf.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                conf.style.animationDelay = Math.random() * 0.5 + 's';
+                document.body.appendChild(conf);
+                setTimeout(() => conf.remove(), 5000);
+            }
+        }
+
+        function triggerWin(winnerName) {
+            playSound(600, 2000, 'triangle');
+            document.getElementById('winner-name').textContent = `🎉 فوز ${winnerName}! 🎉`;
+            document.getElementById('celebration-overlay').classList.add('active');
+            throwConfetti();
+        }
+
+        function fullReset() {
+            document.getElementById('celebration-overlay').classList.remove('active');
+            manualResetScores();
+        }
 
         function handleStart() {
             playSound(1200, 300);
@@ -234,7 +300,7 @@
 
             if (turn === 'amin') {
                 aminDiff = diff;
-                statusMsg.textContent = `أمين وقّف بفرق ${diff} لحظة! دور صرابا..`;
+                statusMsg.textContent = `أمين وقّف بفرق ${diff}! دور صرابا..`;
                 turn = 'saraba';
                 
                 playerAmin.classList.remove('active');
@@ -251,24 +317,30 @@
             } else if (turn === 'saraba') {
                 sarabaDiff = diff;
                 let resultText = "";
+                let matchWinner = null;
                 
                 if (aminDiff < sarabaDiff) {
-                    resultText = `فوز أمين! (فرق أمين: ${aminDiff}، صرابا: ${sarabaDiff})`;
+                    resultText = `أمين فاز بالجولة! (فرق: ${aminDiff})`;
                     scoreAmin++; scoreAminDisplay.textContent = scoreAmin;
                     playSound(800, 1500, 'triangle');
+                    if(scoreAmin >= 3) matchWinner = "أمين";
                 } else if (sarabaDiff < aminDiff) {
-                    resultText = `فوز صرابا! (فرق أمين: ${aminDiff}، صرابا: ${sarabaDiff})`;
+                    resultText = `صرابا فاز بالجولة! (فرق: ${sarabaDiff})`;
                     scoreSaraba++; scoreSarabaDisplay.textContent = scoreSaraba;
                     playSound(800, 1500, 'triangle'); 
+                    if(scoreSaraba >= 3) matchWinner = "صرابا";
                 } else {
-                    resultText = `تعادل! كلاكما بفرق ${aminDiff} لحظة`;
+                    resultText = `تعادل في الجولة! (الفرق: ${aminDiff})`;
                 }
 
-                statusMsg.textContent = resultText;
-                
-                startBtn.style.display = "none";
-                pauseBtn.style.display = "none";
-                nextBtn.style.display = "block";
+                if (matchWinner) {
+                    setTimeout(() => triggerWin(matchWinner), 500);
+                } else {
+                    statusMsg.textContent = resultText;
+                    startBtn.style.display = "none";
+                    pauseBtn.style.display = "none";
+                    nextBtn.style.display = "block";
+                }
             }
         }
 
@@ -289,12 +361,14 @@
         }
 
         function startTimer() {
+            isRunning = true;
             startTime = Date.now() - elapsedTime;
             timerInterval = setInterval(updateTime, 10);
             startBtn.style.display = "none"; pauseBtn.style.display = "block";
         }
 
         function stopTimer() {
+            isRunning = false;
             clearInterval(timerInterval);
             elapsedTime = Date.now() - startTime;
         }
@@ -308,8 +382,7 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                .then((reg) => console.log('Service worker registered.', reg))
-                .catch((err) => console.log('Service worker not registered.', err));
+                .catch((err) => console.log('SW not registered.', err));
             });
         }
     </script>
