@@ -111,13 +111,34 @@
 
         /* ---------- Setup screens ---------- */
         .setup-label { font-family: 'Sora', sans-serif; font-size: 1.05rem; font-weight: 700; margin: 6px 0 18px; }
-        .count-input {
-            width: 120px; padding: 16px; font-family: 'Orbitron', sans-serif; font-size: 2rem; text-align: center;
-            background: rgba(0,0,0,0.35); border: 1px solid var(--line); border-radius: 16px; color: var(--amber);
-            outline: none; margin: 0 auto 22px;
+
+        .count-picker { margin: 10px auto 24px; }
+        .count-display {
+            font-family: 'Orbitron', sans-serif; font-size: 3.2rem; font-weight: 700; color: var(--amber);
+            text-shadow: 0 0 22px rgba(255,176,32,0.45); line-height: 1; margin-bottom: 4px;
         }
-        .count-input:focus { border-color: var(--amber); }
-        .count-hint { font-size: 0.78rem; color: var(--muted); margin-top: -14px; margin-bottom: 20px; }
+        .count-display-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 18px; }
+        .slider-row { display: flex; align-items: center; gap: 12px; }
+        .step-btn {
+            width: 46px; height: 46px; flex-shrink: 0; border-radius: 14px; border: 1px solid var(--line);
+            background: rgba(255,255,255,0.04); color: var(--ink); font-family: 'Sora'; font-size: 1.4rem; font-weight: 700;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; user-select: none;
+        }
+        .step-btn:active { transform: scale(0.92); background: rgba(67,217,255,0.12); }
+        .count-slider {
+            flex: 1; -webkit-appearance: none; appearance: none; height: 8px; border-radius: 6px;
+            background: linear-gradient(90deg, var(--cyan) 0%, var(--cyan) var(--fill, 0%), rgba(255,255,255,0.08) var(--fill, 0%), rgba(255,255,255,0.08) 100%);
+            outline: none; cursor: pointer;
+        }
+        .count-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 26px; height: 26px; border-radius: 50%;
+            background: var(--amber); border: 3px solid #1c1000; box-shadow: 0 0 12px rgba(255,176,32,0.6); cursor: pointer;
+        }
+        .count-slider::-moz-range-thumb {
+            width: 26px; height: 26px; border-radius: 50%; border: 3px solid #1c1000;
+            background: var(--amber); box-shadow: 0 0 12px rgba(255,176,32,0.6); cursor: pointer;
+        }
+        .count-hint { font-size: 0.78rem; color: var(--muted); margin-top: 16px; margin-bottom: 20px; }
 
         .name-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; text-align: left; max-height: 40vh; overflow-y: auto; padding-right: 4px; }
         .name-row { display: flex; align-items: center; gap: 10px; }
@@ -231,6 +252,9 @@
         .bracket-match .bm-name.tbd { color: #4b5568; font-style: italic; }
         .bracket-match .vs { color: #4b5568; font-size: 0.7rem; margin: 0 8px; }
         .bracket-close { margin-top: 6px; background: rgba(255,255,255,0.06); border: 1px solid var(--line); color: var(--ink); padding: 12px 24px; border-radius: 14px; cursor: pointer; font-family: 'Sora'; font-weight: 700; }
+
+        /* ---------- Inline bracket preview (Step 3) ---------- */
+        .bracket-inline { text-align: left; max-height: 46vh; overflow-y: auto; margin-bottom: 18px; padding-right: 4px; }
     </style>
 </head>
 <body>
@@ -262,7 +286,15 @@
             <div class="eyebrow">Step 1 of 2</div>
             <h1 class="epic-title" style="font-size:1.5rem;">Build the Cup 🏆</h1>
             <p class="setup-label">How many players?</p>
-            <input type="number" id="player-count-input" class="count-input" min="2" max="32" value="2">
+            <div class="count-picker">
+                <div class="count-display" id="count-display">2</div>
+                <div class="count-display-label">players</div>
+                <div class="slider-row">
+                    <button class="step-btn" onclick="stepCount(-1)">−</button>
+                    <input type="range" id="player-count-slider" class="count-slider" min="2" max="16" value="2" oninput="updateCount(this.value)">
+                    <button class="step-btn" onclick="stepCount(1)">+</button>
+                </div>
+            </div>
             <div class="count-hint">Single elimination — one loss and you're out</div>
             <button class="primary-btn" onclick="confirmCount()">Continue</button>
             <button class="back-btn" onclick="backToMenu()">Back to menu</button>
@@ -273,8 +305,17 @@
             <h1 class="epic-title" style="font-size:1.5rem;">Name your players</h1>
             <p class="setup-label" style="margin-top:0;">Bracket seeding is random</p>
             <div class="name-list" id="name-list"></div>
-            <button class="primary-btn" onclick="startCup()">Start the Cup 🏆</button>
+            <button class="primary-btn" onclick="revealBracket()">See who plays who 📋</button>
             <button class="back-btn" onclick="showScreen('screen-setup-count')">Back</button>
+        </div>
+
+        <div id="screen-bracket-preview" class="screen">
+            <div class="eyebrow">The Cup is set</div>
+            <h1 class="epic-title" style="font-size:1.5rem;">Who plays who</h1>
+            <p class="menu-sub" style="margin:6px 0 16px;">Later rounds fill in as winners advance</p>
+            <div class="bracket-inline" id="bracket-inline"></div>
+            <button class="primary-btn" onclick="launchMatch()">Start Round 1 ▶</button>
+            <button class="back-btn" onclick="showScreen('screen-setup-names')">Back</button>
         </div>
 
         <div id="screen-game1" class="screen">
@@ -420,13 +461,29 @@
 
         function selectGame(n) {
             TN.gameType = n;
-            document.getElementById('player-count-input').value = 2;
+            const slider = document.getElementById('player-count-slider');
+            slider.value = 2;
+            updateCount(2);
             showScreen('screen-setup-count');
         }
 
+        function updateCount(v) {
+            v = Math.max(2, Math.min(16, parseInt(v)));
+            const slider = document.getElementById('player-count-slider');
+            slider.value = v;
+            document.getElementById('count-display').textContent = v;
+            const pct = ((v - slider.min) / (slider.max - slider.min)) * 100;
+            slider.style.setProperty('--fill', pct + '%');
+        }
+
+        function stepCount(delta) {
+            const slider = document.getElementById('player-count-slider');
+            updateCount(parseInt(slider.value) + delta);
+        }
+
         function confirmCount() {
-            let n = parseInt(document.getElementById('player-count-input').value) || 2;
-            n = Math.max(2, Math.min(32, n));
+            let n = parseInt(document.getElementById('player-count-slider').value) || 2;
+            n = Math.max(2, Math.min(16, n));
             const list = document.getElementById('name-list');
             list.innerHTML = '';
             for (let i = 0; i < n; i++) {
@@ -498,7 +555,7 @@
             return null;
         }
 
-        function startCup() {
+        function revealBracket() {
             const names = [];
             const inputs = document.querySelectorAll('#name-list input');
             inputs.forEach((inp, i) => {
@@ -508,7 +565,8 @@
             TN.players = names;
             TN.rounds = buildBracket(names);
             resolveByes();
-            launchMatch();
+            renderBracketInto('bracket-inline');
+            showScreen('screen-bracket-preview');
         }
 
         function roundLabel(r) {
@@ -596,8 +654,8 @@
         }
 
         // ---------- Bracket viewer ----------
-        function openBracket() {
-            const wrap = document.getElementById('bracket-rounds');
+        function renderBracketInto(containerId) {
+            const wrap = document.getElementById(containerId);
             wrap.innerHTML = '';
             TN.rounds.forEach((round, r) => {
                 const rDiv = document.createElement('div');
@@ -609,7 +667,7 @@
                 round.forEach(match => {
                     const mDiv = document.createElement('div');
                     mDiv.className = 'bracket-match';
-                    const nameHtml = (idx, isWinner) => {
+                    const nameHtml = (idx) => {
                         if (idx === null) return '<span class="bm-name tbd">TBD</span>';
                         const cls = (match.winner !== null && match.winner === idx) ? 'bm-name won' : 'bm-name';
                         return `<span class="${cls}">${TN.players[idx]}</span>`;
@@ -619,6 +677,9 @@
                 });
                 wrap.appendChild(rDiv);
             });
+        }
+        function openBracket() {
+            renderBracketInto('bracket-rounds');
             document.getElementById('bracket-overlay').classList.add('active');
         }
         function closeBracket() { document.getElementById('bracket-overlay').classList.remove('active'); }
