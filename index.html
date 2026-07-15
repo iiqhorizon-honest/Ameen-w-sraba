@@ -1,212 +1,303 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stay focused</title>
+    <title>Stay Focused</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#090d16">
+    <meta name="theme-color" content="#080b14">
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3240/3240638.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@700&family=Tajawal:wght@500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600&family=Orbitron:wght@500;600;700&display=swap');
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #080b14;
+            --panel: rgba(16, 22, 36, 0.65);
+            --line: rgba(255,255,255,0.06);
+            --cyan: #43d9ff;
+            --amber: #ffb020;
+            --magenta: #ff3d81;
+            --ink: #eef2fb;
+            --muted: #7c88a6;
+        }
+
         body {
-            background: #090d16;
-            height: 100vh;
+            background: radial-gradient(circle at 20% 15%, #101b30 0%, transparent 45%),
+                        radial-gradient(circle at 85% 90%, #1a0f26 0%, transparent 45%),
+                        var(--bg);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: #f8fafc;
-            font-family: 'Tajawal', sans-serif;
+            color: var(--ink);
+            font-family: 'Inter', sans-serif;
             overflow: hidden;
             position: relative;
         }
 
+        /* faint instrument grid */
+        body::before {
+            content: "";
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+            background-size: 42px 42px;
+            pointer-events: none;
+            mask-image: radial-gradient(circle at 50% 40%, black, transparent 75%);
+        }
+
         .game-container {
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(20px);
-            border: 2px solid rgba(255, 255, 255, 0.05);
-            padding: 25px 30px;
-            border-radius: 40px;
+            background: var(--panel);
+            backdrop-filter: blur(22px);
+            border: 1px solid var(--line);
+            padding: 30px 32px;
+            border-radius: 32px;
             text-align: center;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+            box-shadow: 0 30px 70px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04);
             width: 380px;
             z-index: 10;
-            transition: all 0.3s ease;
+        }
+
+        .eyebrow {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 6px;
         }
 
         .epic-title {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Sora', sans-serif;
             font-size: 2rem;
-            background: linear-gradient(45deg, #ffd700, #ff007f);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 15px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: var(--ink);
+            margin-bottom: 4px;
         }
+        .epic-title .dot { color: var(--cyan); text-shadow: 0 0 14px rgba(67,217,255,0.7); }
 
-        /* Screens */
         .screen { display: none; flex-direction: column; width: 100%; }
-        .screen.active { display: flex; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .screen.active { display: flex; animation: fadeIn 0.45s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Main Menu Buttons */
-        .menu-btn {
-            background: linear-gradient(135deg, #38bdf8, #0284c7);
-            color: #090d16; padding: 15px; margin: 10px 0; border: none;
-            border-radius: 20px; font-size: 1.2rem; font-weight: 700; font-family: 'Tajawal', sans-serif;
-            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 5px 15px rgba(56, 189, 248, 0.4);
+        /* ---------- Menu ---------- */
+        .menu-sub { color: var(--muted); margin: 14px 0 22px; font-size: 0.95rem; }
+
+        .mode-card {
+            display: flex; align-items: center; gap: 14px; text-align: left;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--line);
+            padding: 16px 18px; margin: 10px 0; border-radius: 18px;
+            cursor: pointer; transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
         }
-        .menu-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(56, 189, 248, 0.6); }
-        .menu-btn.alt { background: linear-gradient(135deg, #ff007f, #be123c); color: white; box-shadow: 0 5px 15px rgba(255, 0, 127, 0.4); }
-        .menu-btn.alt:hover { box-shadow: 0 8px 20px rgba(255, 0, 127, 0.6); }
+        .mode-card:hover { transform: translateY(-2px); border-color: rgba(67,217,255,0.35); background: rgba(67,217,255,0.06); }
+        .mode-card .icon {
+            width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
+            background: linear-gradient(135deg, rgba(67,217,255,0.18), rgba(67,217,255,0.04));
+            border: 1px solid rgba(67,217,255,0.25);
+        }
+        .mode-card.alt .icon { background: linear-gradient(135deg, rgba(255,61,129,0.18), rgba(255,61,129,0.04)); border-color: rgba(255,61,129,0.3); }
+        .mode-card h3 { font-family: 'Sora', sans-serif; font-size: 1.02rem; font-weight: 700; margin-bottom: 2px; }
+        .mode-card p { font-size: 0.78rem; color: var(--muted); line-height: 1.3; }
 
-        /* Scoreboard */
-        .scoreboard { display: flex; justify-content: space-between; margin-bottom: 15px; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 10px; }
-        .player { flex: 1; padding: 10px; border-radius: 15px; transition: all 0.3s ease; opacity: 0.5; }
-        .player.active { opacity: 1; background: rgba(56, 189, 248, 0.2); border: 1px solid rgba(56, 189, 248, 0.5); box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
-        .player.active.alt { background: rgba(255, 0, 127, 0.2); border-color: rgba(255, 0, 127, 0.5); box-shadow: 0 0 15px rgba(255, 0, 127, 0.3); }
-        .player-name { font-size: 1rem; font-weight: 700; color: #cbd5e1; margin-bottom: 5px; }
-        .player-score { font-family: 'Orbitron', sans-serif; font-size: 1.5rem; color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+        /* ---------- Scoreboard ---------- */
+        .scoreboard { display: flex; gap: 10px; margin-bottom: 16px; }
+        .player {
+            flex: 1; padding: 10px 8px; border-radius: 16px; opacity: 0.45;
+            border: 1px solid var(--line); transition: all 0.3s ease;
+            background: rgba(255,255,255,0.02);
+        }
+        .player.active { opacity: 1; background: rgba(67,217,255,0.08); border-color: rgba(67,217,255,0.4); box-shadow: 0 0 18px rgba(67,217,255,0.15); }
+        .player.active.alt { background: rgba(255,61,129,0.08); border-color: rgba(255,61,129,0.4); box-shadow: 0 0 18px rgba(255,61,129,0.15); }
+        .player-name { font-family: 'Sora', sans-serif; font-size: 0.85rem; font-weight: 600; color: #cbd5e1; margin-bottom: 4px; letter-spacing: 0.3px; }
+        .player-score { font-family: 'Orbitron', sans-serif; font-size: 1.4rem; color: var(--amber); text-shadow: 0 0 12px rgba(255,176,32,0.4); }
 
-        /* Shared Game Info */
-        .target-box { font-size: 1.1rem; color: #94a3b8; }
-        .target-number { font-family: 'Orbitron', sans-serif; font-size: 1.8rem; color: #ff007f; font-weight: 700; margin: 0 5px; text-shadow: 0 0 10px rgba(255, 0, 127, 0.4); letter-spacing: 2px; }
-        .status-msg { font-size: 0.95rem; color: #38bdf8; margin-top: 5px; height: 40px; font-weight: 600; display: flex; align-items: center; justify-content: center; text-align: center;}
+        .target-box { font-size: 0.95rem; color: var(--muted); }
+        .target-number { font-family: 'Orbitron', sans-serif; font-size: 1.6rem; color: var(--magenta); font-weight: 700; margin: 0 5px; text-shadow: 0 0 10px rgba(255,61,129,0.4); }
+        .status-msg { font-size: 0.88rem; color: var(--cyan); margin-top: 8px; min-height: 38px; font-weight: 500; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.35; }
 
-        /* Display */
-        .display { font-family: 'Orbitron', sans-serif; font-size: 3.5rem; margin: 15px 0; display: flex; justify-content: center; align-items: center; gap: 15px; direction: ltr; }
-        .unit { display: flex; flex-direction: column; align-items: center; width: 80px;}
-        .unit-label { font-family: 'Poppins', sans-serif; font-size: 0.65rem; color: #64748b; text-transform: uppercase; margin-top: 5px; }
-        .sec-color { color: #38bdf8; }
-        .mom-color { color: #ff007f; }
-        .hidden-num { color: #94a3b8; animation: pulseHidden 1.5s infinite; }
-        @keyframes pulseHidden { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        .separator { color: #cbd5e1; padding-bottom: 15px; }
+        /* ---------- Bezel / dial display ---------- */
+        .dial-wrap { position: relative; width: 220px; height: 220px; margin: 18px auto 10px; }
+        .dial-ring {
+            position: absolute; inset: 0; border-radius: 50%;
+            background: repeating-conic-gradient(rgba(255,255,255,0.09) 0deg 2deg, transparent 2deg 30deg);
+            -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 14px), #000 calc(100% - 13px));
+                    mask: radial-gradient(farthest-side, transparent calc(100% - 14px), #000 calc(100% - 13px));
+            animation: spin 40s linear infinite;
+        }
+        .dial-ring.running { animation-duration: 6s; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Controls */
-        .controls { display: flex; gap: 10px; margin-top: 10px; }
-        .btn { padding: 12px; flex: 1; border: none; border-radius: 20px; font-weight: 700; font-family: 'Tajawal', sans-serif; font-size: 1rem; cursor: pointer; transition: transform 0.1s, box-shadow 0.2s; }
-        .btn:active { transform: scale(0.95); }
-        .btn-start { background: linear-gradient(135deg, #38bdf8, #0284c7); color: #090d16; box-shadow: 0 5px 15px rgba(56, 189, 248, 0.4); }
-        .btn-stop { background: linear-gradient(135deg, #f43f5e, #be123c); color: white; box-shadow: 0 5px 15px rgba(244, 63, 94, 0.4); }
-        .btn-next { background: #334155; color: white; }
-        
-        .extra-controls { display: flex; gap: 10px; margin-top: 15px; justify-content: center; }
+        .dial-core {
+            position: absolute; inset: 16px; border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, rgba(67,217,255,0.06), transparent 60%), rgba(6,9,16,0.6);
+            border: 1px solid var(--line);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+        }
+
+        .display { font-family: 'Orbitron', sans-serif; font-size: 2.5rem; display: flex; justify-content: center; align-items: baseline; gap: 8px; direction: ltr; }
+        .unit { display: flex; flex-direction: column; align-items: center; }
+        .unit-label { font-family: 'Inter', sans-serif; font-size: 0.58rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-top: 4px; }
+        .sec-color { color: var(--cyan); }
+        .mom-color { color: var(--magenta); }
+        .hidden-num { color: #64748b; animation: pulseHidden 1.4s infinite; }
+        @keyframes pulseHidden { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+        .separator { color: #4b5568; font-size: 1.8rem; }
+
+        /* ---------- Controls ---------- */
+        .controls { display: flex; gap: 10px; margin-top: 14px; }
+        .btn { padding: 13px; flex: 1; border: none; border-radius: 16px; font-weight: 700; font-family: 'Sora', sans-serif; font-size: 0.92rem; cursor: pointer; transition: transform 0.1s, box-shadow 0.2s; letter-spacing: 0.2px; }
+        .btn:active { transform: scale(0.96); }
+        .btn-start { background: linear-gradient(135deg, var(--cyan), #0284c7); color: #06121c; box-shadow: 0 6px 16px rgba(67,217,255,0.3); }
+        .btn-stop { background: linear-gradient(135deg, #f43f5e, #be123c); color: white; box-shadow: 0 6px 16px rgba(244,63,94,0.3); }
+        .btn-next { background: #232c40; color: var(--ink); }
+        .btn-submit { background: linear-gradient(135deg, var(--amber), #ff8c00); color: #201200; box-shadow: 0 6px 16px rgba(255,176,32,0.3); }
+
+        .extra-controls { display: flex; gap: 10px; margin-top: 14px; justify-content: center; }
         .extra-controls button {
-            background: rgba(255,255,255,0.05); color: #cbd5e1;
-            font-size: 0.85rem; padding: 10px 20px; border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px; cursor: pointer; font-family: 'Tajawal', sans-serif;
+            background: rgba(255,255,255,0.03); color: var(--muted);
+            font-size: 0.78rem; padding: 9px 16px; border: 1px solid var(--line);
+            border-radius: 10px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.15s ease;
         }
-        .extra-controls button:hover { background: rgba(255,255,255,0.1); color: white; }
+        .extra-controls button:hover { background: rgba(255,255,255,0.07); color: var(--ink); }
 
-        .back-btn { background: transparent; color: #64748b; font-size: 0.85rem; border: none; margin-top: 15px; cursor: pointer; text-decoration: underline; font-family: 'Tajawal', sans-serif;}
+        .back-btn { background: transparent; color: #56607a; font-size: 0.8rem; border: none; margin-top: 16px; cursor: pointer; text-decoration: underline; font-family: 'Inter', sans-serif; }
 
-        /* Guess Inputs */
-        .guess-box { display: none; flex-direction: column; gap: 10px; margin-top: 10px; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 20px; border: 1px solid #38bdf8;}
-        .guess-inputs { display: flex; gap: 10px; justify-content: center; align-items: center; direction: ltr;}
-        .guess-inputs input { width: 70px; padding: 10px; border-radius: 10px; border: 1px solid #64748b; background: #0f172a; color: #fff; font-family: 'Orbitron'; font-size: 1.2rem; text-align: center; outline: none;}
-        .guess-inputs input:focus { border-color: #ffd700; }
-        .btn-submit { background: #ffd700; color: #090d16; margin-top: 5px; }
+        /* ---------- Guess panel ---------- */
+        .guess-box { display: none; flex-direction: column; gap: 10px; margin-top: 12px; background: rgba(0,0,0,0.35); padding: 16px; border-radius: 18px; border: 1px solid rgba(67,217,255,0.35); }
+        .guess-inputs { display: flex; gap: 10px; justify-content: center; align-items: center; direction: ltr; }
+        .guess-inputs input { width: 72px; padding: 10px; border-radius: 10px; border: 1px solid #384258; background: #0c1220; color: #fff; font-family: 'Orbitron'; font-size: 1.15rem; text-align: center; outline: none; }
+        .guess-inputs input:focus { border-color: var(--amber); }
+        .guess-inputs input::placeholder { color: #4b5568; font-family: 'Inter'; font-size: 0.7rem; }
 
-        /* Celebration */
-        .celebration-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(9, 13, 22, 0.95); display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+        /* ---------- Celebration ---------- */
+        .celebration-overlay { position: fixed; inset: 0; background: rgba(6,9,16,0.95); display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
         .celebration-overlay.active { opacity: 1; pointer-events: all; }
-        .celebration-box { background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(255, 0, 127, 0.1)); border: 2px solid #38bdf8; padding: 40px; border-radius: 30px; text-align: center; transform: scale(0.5); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 0 50px rgba(56, 189, 248, 0.4); }
+        .celebration-box { background: linear-gradient(135deg, rgba(67,217,255,0.08), rgba(255,61,129,0.08)); border: 1px solid rgba(67,217,255,0.4); padding: 42px; border-radius: 26px; text-align: center; transform: scale(0.5); transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 0 60px rgba(67,217,255,0.25); }
         .celebration-overlay.active .celebration-box { transform: scale(1); }
-        .winner-title { font-family: 'Tajawal', sans-serif; font-size: 2.5rem; background: linear-gradient(45deg, #ffd700, #ff007f, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; font-weight: 700; text-shadow: 0 0 20px rgba(255,0,127,0.5); }
-        .play-again-btn { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #090d16; padding: 15px 30px; font-size: 1.2rem; margin-top: 15px; border:none; border-radius:20px; cursor:pointer; font-weight:bold; box-shadow: 0 0 20px rgba(255,215,0,0.4); font-family: 'Tajawal';}
+        .winner-title { font-family: 'Sora', sans-serif; font-size: 2rem; font-weight: 800; color: var(--ink); margin-bottom: 8px; }
+        .winner-title .glow { color: var(--amber); text-shadow: 0 0 20px rgba(255,176,32,0.6); }
+        .winner-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 22px; }
+        .play-again-btn { background: linear-gradient(135deg, var(--amber), #ff8c00); color: #1c1000; padding: 14px 28px; font-size: 1.02rem; border: none; border-radius: 16px; cursor: pointer; font-weight: 700; box-shadow: 0 0 24px rgba(255,176,32,0.35); font-family: 'Sora'; }
 
-        .confetti { position: fixed; width: 10px; height: 10px; top: -10px; z-index: 999; animation: fall linear forwards; }
+        .confetti { position: fixed; width: 9px; height: 9px; top: -10px; z-index: 999; animation: fall linear forwards; }
         @keyframes fall { to { transform: translateY(100vh) rotate(720deg); } }
     </style>
 </head>
 <body>
 
     <div class="game-container">
-        <h1 class="epic-title">Stay focused</h1>
 
         <div id="screen-menu" class="screen active">
-            <p style="color: #94a3b8; margin-bottom: 25px; font-size: 1.1rem;">اختار التحدي يا بطل</p>
-            <button class="menu-btn" onclick="openGame1()">تحدي الهدف 🎯</button>
-            <button class="menu-btn alt" onclick="openGame2()">التوقع الأعمى 🎧</button>
+            <div class="eyebrow">Precision Timing Duel</div>
+            <h1 class="epic-title">Stay Focused<span class="dot">.</span></h1>
+            <p class="menu-sub">Pick your challenge</p>
+
+            <div class="mode-card" onclick="openGame1()">
+                <div class="icon">🎯</div>
+                <div>
+                    <h3>Target Lock</h3>
+                    <p>A target time is set. Stop the counter as close to it as you can.</p>
+                </div>
+            </div>
+            <div class="mode-card alt" onclick="openGame2()">
+                <div class="icon">🎧</div>
+                <div>
+                    <h3>Blind Call</h3>
+                    <p>One player runs the counter in secret. The other calls where it landed.</p>
+                </div>
+            </div>
         </div>
 
         <div id="screen-game1" class="screen">
             <div class="scoreboard">
-                <div class="player active" id="g1-p-amin"><div class="player-name">أمين</div><div class="player-score" id="g1-s-amin">0</div></div>
-                <div class="player" id="g1-p-saraba"><div class="player-name">صرابا</div><div class="player-score" id="g1-s-saraba">0</div></div>
+                <div class="player active" id="g1-p-amin"><div class="player-name">Amin</div><div class="player-score" id="g1-s-amin">0</div></div>
+                <div class="player" id="g1-p-saraba"><div class="player-name">Saraba</div><div class="player-score" id="g1-s-saraba">0</div></div>
             </div>
             <div class="game-info">
-                <div class="target-box">الهدف: وقّف عند <br> <span class="target-number" id="g1-target">00:00</span></div>
-                <div class="status-msg" id="g1-status">دور أمين، اضغط ابدأ!</div>
+                <div class="target-box">Target: stop at <span class="target-number" id="g1-target">00:00</span></div>
+                <div class="status-msg" id="g1-status">Amin's turn — press Start!</div>
             </div>
-            <div class="display">
-                <div class="unit"><span class="sec-color" id="g1-sec">00</span><span class="unit-label">Secs</span></div>
-                <span class="separator">:</span>
-                <div class="unit"><span class="mom-color" id="g1-mom">00</span><span class="unit-label">Mmnts</span></div>
+
+            <div class="dial-wrap">
+                <div class="dial-ring" id="g1-ring"></div>
+                <div class="dial-core">
+                    <div class="display">
+                        <div class="unit"><span class="sec-color" id="g1-sec">00</span><span class="unit-label">Secs</span></div>
+                        <span class="separator">:</span>
+                        <div class="unit"><span class="mom-color" id="g1-mom">00</span><span class="unit-label">Ticks</span></div>
+                    </div>
+                </div>
             </div>
+
             <div class="controls">
-                <button class="btn btn-start" id="g1-btn-start" onclick="g1_start()">ابدأ</button>
-                <button class="btn btn-stop" id="g1-btn-stop" style="display:none;" onclick="g1_stop()">وقّف</button>
-                <button class="btn btn-next" id="g1-btn-next" style="display:none;" onclick="g1_next()">جولة جديدة</button>
+                <button class="btn btn-start" id="g1-btn-start" onclick="g1_start()">Start</button>
+                <button class="btn btn-stop" id="g1-btn-stop" style="display:none;" onclick="g1_stop()">Stop</button>
+                <button class="btn btn-next" id="g1-btn-next" style="display:none;" onclick="g1_next()">New Round</button>
             </div>
             <div class="extra-controls">
-                <button onclick="g1_manualChangeTarget()">تغيير الهدف 🎯</button>
-                <button onclick="g1_manualResetScores()">تصفير النتائج 🔄</button>
+                <button onclick="g1_manualChangeTarget()">Change target 🎯</button>
+                <button onclick="g1_manualResetScores()">Reset score 🔄</button>
             </div>
-            <button class="back-btn" onclick="backToMenu()">الرجوع للقائمة الرئيسية</button>
+            <button class="back-btn" onclick="backToMenu()">Back to menu</button>
         </div>
 
         <div id="screen-game2" class="screen">
             <div class="scoreboard">
-                <div class="player active alt" id="g2-p-amin"><div class="player-name">أمين</div><div class="player-score" id="g2-s-amin">0</div></div>
-                <div class="player alt" id="g2-p-saraba"><div class="player-name">صرابا</div><div class="player-score" id="g2-s-saraba">0</div></div>
+                <div class="player active alt" id="g2-p-amin"><div class="player-name">Amin</div><div class="player-score" id="g2-s-amin">0</div></div>
+                <div class="player alt" id="g2-p-saraba"><div class="player-name">Saraba</div><div class="player-score" id="g2-s-saraba">0</div></div>
             </div>
             <div class="game-info">
-                <div class="status-msg" id="g2-status" style="color: #ff007f;">أمين هيتوقع!<br>يا صرابا شغل ووقّف العداد براحتك</div>
+                <div class="status-msg" id="g2-status" style="color: var(--magenta);">Amin is calling it!<br>Saraba, run the counter and stop whenever you like</div>
             </div>
-            <div class="display">
-                <div class="unit"><span class="sec-color" id="g2-sec">00</span><span class="unit-label">Secs</span></div>
-                <span class="separator">:</span>
-                <div class="unit"><span class="mom-color" id="g2-mom">00</span><span class="unit-label">Mmnts</span></div>
-            </div>
-            
-            <div class="guess-box" id="g2-guess-box">
-                <div style="color:#ffd700; font-size:0.9rem; margin-bottom:5px;" id="g2-guess-title">يا أمين، تتوقع العداد وقف عند كام؟</div>
-                <div class="guess-inputs">
-                    <input type="number" id="g2-in-sec" placeholder="ثواني" min="0" max="99">
-                    <span style="font-family:'Orbitron'; font-size:1.5rem; color:#fff;">:</span>
-                    <input type="number" id="g2-in-mom" placeholder="لحظات" min="0" max="99">
+
+            <div class="dial-wrap">
+                <div class="dial-ring" id="g2-ring"></div>
+                <div class="dial-core">
+                    <div class="display">
+                        <div class="unit"><span class="sec-color" id="g2-sec">00</span><span class="unit-label">Secs</span></div>
+                        <span class="separator">:</span>
+                        <div class="unit"><span class="mom-color" id="g2-mom">00</span><span class="unit-label">Ticks</span></div>
+                    </div>
                 </div>
-                <button class="btn btn-submit" onclick="g2_submitGuess()">تأكيد التوقع ✔️</button>
+            </div>
+
+            <div class="guess-box" id="g2-guess-box">
+                <div style="color:var(--amber); font-size:0.85rem; margin-bottom:2px;" id="g2-guess-title">Amin, where do you think it stopped?</div>
+                <div class="guess-inputs">
+                    <input type="number" id="g2-in-sec" placeholder="secs" min="0" max="99">
+                    <span style="font-family:'Orbitron'; font-size:1.4rem; color:#fff;">:</span>
+                    <input type="number" id="g2-in-mom" placeholder="ticks" min="0" max="99">
+                </div>
+                <button class="btn btn-submit" onclick="g2_submitGuess()">Lock in guess ✔️</button>
             </div>
 
             <div class="controls" id="g2-controls">
-                <button class="btn btn-start" id="g2-btn-start" onclick="g2_start()">ابدأ (صوت)</button>
-                <button class="btn btn-stop" id="g2-btn-stop" style="display:none;" onclick="g2_stop()">وقّف (صوت)</button>
-                <button class="btn btn-next" id="g2-btn-next" style="display:none;" onclick="g2_next()">جولة جديدة</button>
-            </div>
-            
-            <div class="extra-controls">
-                <button onclick="g2_manualResetScores()">تصفير النتائج 🔄</button>
+                <button class="btn btn-start" id="g2-btn-start" onclick="g2_start()">Start (secret)</button>
+                <button class="btn btn-stop" id="g2-btn-stop" style="display:none;" onclick="g2_stop()">Stop (secret)</button>
+                <button class="btn btn-next" id="g2-btn-next" style="display:none;" onclick="g2_next()">New Round</button>
             </div>
 
-            <button class="back-btn" onclick="backToMenu()">الرجوع للقائمة الرئيسية</button>
+            <div class="extra-controls">
+                <button onclick="g2_manualResetScores()">Reset score 🔄</button>
+            </div>
+
+            <button class="back-btn" onclick="backToMenu()">Back to menu</button>
         </div>
 
     </div>
 
     <div class="celebration-overlay" id="celebration-overlay">
         <div class="celebration-box">
-            <div class="winner-title" id="winner-name">🎉 فوز أمين! 🎉</div>
-            <p style="color: #cbd5e1; font-size: 1.1rem; margin-bottom: 20px;">أول من وصل لـ 3 نقاط</p>
-            <button class="play-again-btn" onclick="fullReset()">العب ماتش جديد 🎮</button>
+            <div class="winner-title" id="winner-name">🎉 <span class="glow">Amin</span> wins! 🎉</div>
+            <div class="winner-sub">First to 3 points</div>
+            <button class="play-again-btn" onclick="fullReset()">Play a new match 🎮</button>
         </div>
     </div>
 
@@ -233,7 +324,7 @@
         function backToMenu() { showScreen('screen-menu'); }
 
         function throwConfetti() {
-            const colors = ['#38bdf8', '#ff007f', '#ffd700', '#10b981'];
+            const colors = ['#43d9ff', '#ff3d81', '#ffb020', '#10b981'];
             for (let i = 0; i < 80; i++) {
                 let conf = document.createElement('div'); conf.className = 'confetti';
                 conf.style.left = Math.random() * 100 + 'vw';
@@ -247,7 +338,7 @@
 
         function triggerWin(winnerName) {
             playSound(600, 2000, 'triangle', 0.5);
-            document.getElementById('winner-name').textContent = `🎉 فوز ${winnerName}! 🎉`;
+            document.getElementById('winner-name').innerHTML = `🎉 <span class="glow">${winnerName}</span> wins! 🎉`;
             document.getElementById('celebration-overlay').classList.add('active');
             throwConfetti();
         }
@@ -259,7 +350,7 @@
             else if(activeGame === 2) { g2_scoreAmin = 0; g2_scoreSaraba = 0; g2_hardReset(); }
         }
 
-        // --- Game 1: Target Match Logic ---
+        // --- Game 1: Target Lock Logic ---
         let g1_startTime = 0, g1_elapsed = 0, g1_timer;
         let g1_targetTotal = 0, g1_turn = 'amin', g1_diffAmin = 0, g1_diffSaraba = 0;
         let g1_scoreAmin = 0, g1_scoreSaraba = 0, g1_isRunning = false;
@@ -273,26 +364,27 @@
         }
 
         function g1_manualChangeTarget() {
-            if (g1_isRunning) return; 
+            if (g1_isRunning) return;
             g1_genTarget();
             playSound(800, 1200, 'sine');
-            document.getElementById('g1-status').textContent = "تم تغيير الهدف!";
+            document.getElementById('g1-status').textContent = "Target changed!";
         }
 
         function g1_manualResetScores() {
             if (g1_isRunning) return;
-            g1_scoreAmin = 0; g1_scoreSaraba = 0; 
-            document.getElementById('g1-s-amin').textContent = "0"; 
+            g1_scoreAmin = 0; g1_scoreSaraba = 0;
+            document.getElementById('g1-s-amin').textContent = "0";
             document.getElementById('g1-s-saraba').textContent = "0";
             g1_next();
-            document.getElementById('g1-status').textContent = "تم تصفير الماتش. دور أمين!";
+            document.getElementById('g1-status').textContent = "Match reset. Amin's turn!";
         }
 
         function g1_start() {
             playSound(1200, 300); g1_isRunning = true; g1_startTime = Date.now() - g1_elapsed;
             g1_timer = setInterval(g1_update, 10);
+            document.getElementById('g1-ring').classList.add('running');
             document.getElementById('g1-btn-start').style.display = "none"; document.getElementById('g1-btn-stop').style.display = "block";
-            document.getElementById('g1-status').textContent = "ركّز ووقّف في اللحظة المناسبة!";
+            document.getElementById('g1-status').textContent = "Stay focused — stop at the right moment!";
         }
 
         function g1_update() {
@@ -303,20 +395,21 @@
 
         function g1_stop() {
             playSound(1200, 300); clearInterval(g1_timer); g1_isRunning = false;
+            document.getElementById('g1-ring').classList.remove('running');
             g1_elapsed = Date.now() - g1_startTime;
             const diff = Math.abs(Math.floor(g1_elapsed / 10) - g1_targetTotal);
 
             if (g1_turn === 'amin') {
-                g1_diffAmin = diff; document.getElementById('g1-status').textContent = `أمين بفرق ${diff}! دور صرابا..`;
+                g1_diffAmin = diff; document.getElementById('g1-status').textContent = `Amin missed by ${diff}. Saraba's turn!`;
                 g1_turn = 'saraba'; document.getElementById('g1-p-amin').classList.remove('active'); document.getElementById('g1-p-saraba').classList.add('active');
-                document.getElementById('g1-btn-start').textContent = "ابدأ (صرابا)"; document.getElementById('g1-btn-start').style.display = "block";
+                document.getElementById('g1-btn-start').textContent = "Start (Saraba)"; document.getElementById('g1-btn-start').style.display = "block";
                 document.getElementById('g1-btn-stop').style.display = "none";
                 document.getElementById('g1-sec').textContent = "00"; document.getElementById('g1-mom').textContent = "00"; g1_elapsed = 0;
             } else {
                 g1_diffSaraba = diff; let res = "", matchWin = null;
-                if (g1_diffAmin < g1_diffSaraba) { res = `فوز أمين! (فرق: ${g1_diffAmin})`; g1_scoreAmin++; document.getElementById('g1-s-amin').textContent = g1_scoreAmin; playSound(800, 1500, 'triangle'); if(g1_scoreAmin >= 3) matchWin = "أمين"; }
-                else if (g1_diffSaraba < g1_diffAmin) { res = `فوز صرابا! (فرق: ${g1_diffSaraba})`; g1_scoreSaraba++; document.getElementById('g1-s-saraba').textContent = g1_scoreSaraba; playSound(800, 1500, 'triangle'); if(g1_scoreSaraba >= 3) matchWin = "صرابا"; }
-                else { res = `تعادل! (الفرق: ${g1_diffAmin})`; }
+                if (g1_diffAmin < g1_diffSaraba) { res = `Amin wins the round! (off by ${g1_diffAmin})`; g1_scoreAmin++; document.getElementById('g1-s-amin').textContent = g1_scoreAmin; playSound(800, 1500, 'triangle'); if(g1_scoreAmin >= 3) matchWin = "Amin"; }
+                else if (g1_diffSaraba < g1_diffAmin) { res = `Saraba wins the round! (off by ${g1_diffSaraba})`; g1_scoreSaraba++; document.getElementById('g1-s-saraba').textContent = g1_scoreSaraba; playSound(800, 1500, 'triangle'); if(g1_scoreSaraba >= 3) matchWin = "Saraba"; }
+                else { res = `Tie! Both off by ${g1_diffAmin}`; }
 
                 if (matchWin) { setTimeout(() => triggerWin(matchWin), 500); }
                 else {
@@ -330,9 +423,9 @@
         function g1_next() {
             playSound(600, 100, 'triangle'); g1_genTarget(); g1_turn = 'amin';
             document.getElementById('g1-p-saraba').classList.remove('active'); document.getElementById('g1-p-amin').classList.add('active');
-            document.getElementById('g1-status').textContent = "دور أمين، اضغط ابدأ!";
+            document.getElementById('g1-status').textContent = "Amin's turn — press Start!";
             document.getElementById('g1-sec').textContent = "00"; document.getElementById('g1-mom').textContent = "00"; g1_elapsed = 0;
-            document.getElementById('g1-btn-next').style.display = "none"; document.getElementById('g1-btn-start').textContent = "ابدأ (أمين)"; document.getElementById('g1-btn-start').style.display = "block";
+            document.getElementById('g1-btn-next').style.display = "none"; document.getElementById('g1-btn-start').textContent = "Start (Amin)"; document.getElementById('g1-btn-start').style.display = "block";
         }
 
         function g1_hardReset() {
@@ -340,7 +433,7 @@
             g1_next();
         }
 
-        // --- Game 2: Blind Guess Logic ---
+        // --- Game 2: Blind Call Logic ---
         let g2_startTime = 0, g2_elapsed = 0, g2_timer;
         let g2_actualTotal = 0, g2_turn = 'amin', g2_diffAmin = 0, g2_diffSaraba = 0;
         let g2_scoreAmin = 0, g2_scoreSaraba = 0;
@@ -349,21 +442,21 @@
         function openGame2() { activeGame = 2; showScreen('screen-game2'); g2_hardReset(); }
 
         function g2_manualResetScores() {
-            if (g2_isRunning) return; // منع التصفير أثناء عمل العداد
-            g2_scoreAmin = 0; g2_scoreSaraba = 0; 
-            document.getElementById('g2-s-amin').textContent = "0"; 
+            if (g2_isRunning) return;
+            g2_scoreAmin = 0; g2_scoreSaraba = 0;
+            document.getElementById('g2-s-amin').textContent = "0";
             document.getElementById('g2-s-saraba').textContent = "0";
             g2_next();
-            document.getElementById('g2-status').innerHTML = "تم تصفير الماتش.<br>أمين هيتوقع!";
+            document.getElementById('g2-status').innerHTML = "Match reset.<br>Amin is calling it!";
         }
 
         function g2_start() {
             playSound(1200, 300); g2_isRunning = true; g2_startTime = Date.now() - g2_elapsed; g2_timer = setInterval(g2_update, 10);
+            document.getElementById('g2-ring').classList.add('running');
             document.getElementById('g2-btn-start').style.display = "none"; document.getElementById('g2-btn-stop').style.display = "block";
-            // Hide numbers
             document.getElementById('g2-sec').textContent = "??"; document.getElementById('g2-sec').classList.add('hidden-num');
             document.getElementById('g2-mom').textContent = "??"; document.getElementById('g2-mom').classList.add('hidden-num');
-            document.getElementById('g2-status').innerHTML = "العداد شغال في السر 🤫<br>وقّف براحتك يا وحش";
+            document.getElementById('g2-status').innerHTML = "Counter is running in secret 🤫<br>Stop it whenever you like";
         }
 
         function g2_update() { /* No UI update during running to prevent cheating */ }
@@ -371,13 +464,13 @@
         function g2_stop() {
             playSound(600, 100); clearInterval(g2_timer); g2_isRunning = false; g2_elapsed = Date.now() - g2_startTime;
             g2_actualTotal = Math.floor(g2_elapsed / 10);
+            document.getElementById('g2-ring').classList.remove('running');
             document.getElementById('g2-btn-stop').style.display = "none";
-            
-            // Show Guess Form
+
             document.getElementById('g2-guess-box').style.display = "flex";
-            if(g2_turn === 'amin') document.getElementById('g2-guess-title').textContent = "يا أمين، تتوقع العداد وقف عند كام؟";
-            else document.getElementById('g2-guess-title').textContent = "يا صرابا، تتوقع العداد وقف عند كام؟";
-            document.getElementById('g2-status').innerHTML = "مستنيين التوقع...";
+            if(g2_turn === 'amin') document.getElementById('g2-guess-title').textContent = "Amin, where do you think it stopped?";
+            else document.getElementById('g2-guess-title').textContent = "Saraba, where do you think it stopped?";
+            document.getElementById('g2-status').innerHTML = "Waiting for the guess...";
         }
 
         function g2_submitGuess() {
@@ -386,26 +479,25 @@
             let guessTotal = (sec * 100) + mom;
             let diff = Math.abs(g2_actualTotal - guessTotal);
 
-            // Reveal actual time
             document.getElementById('g2-sec').classList.remove('hidden-num'); document.getElementById('g2-mom').classList.remove('hidden-num');
             document.getElementById('g2-sec').textContent = Math.floor(g2_elapsed / 1000).toString().padStart(2, '0');
             document.getElementById('g2-mom').textContent = Math.floor((g2_elapsed % 1000) / 10).toString().padStart(2, '0');
             document.getElementById('g2-guess-box').style.display = "none";
-            document.getElementById('g2-in-sec').value = ''; document.getElementById('g2-in-mom').value = ''; // clear inputs
+            document.getElementById('g2-in-sec').value = ''; document.getElementById('g2-in-mom').value = '';
 
             if (g2_turn === 'amin') {
-                g2_diffAmin = diff; document.getElementById('g2-status').innerHTML = `الرقم الحقيقي ظهر! أمين جاب فرق ${diff} لحظة.<br>دور صرابا يتوقع!`;
+                g2_diffAmin = diff; document.getElementById('g2-status').innerHTML = `Real number revealed! Amin was off by ${diff}.<br>Saraba's turn to call it!`;
                 g2_turn = 'saraba'; document.getElementById('g2-p-amin').classList.remove('active'); document.getElementById('g2-p-saraba').classList.add('active');
                 document.getElementById('g2-btn-start').style.display = "block";
-                g2_elapsed = 0; // ready for next run
+                g2_elapsed = 0;
 
             } else {
                 g2_diffSaraba = diff; let res = "", matchWin = null;
-                if (g2_diffAmin < g2_diffSaraba) { res = `فوز أمين بالتوقع! (أمين فرق ${g2_diffAmin}، صرابا فرق ${g2_diffSaraba})`; g2_scoreAmin++; document.getElementById('g2-s-amin').textContent = g2_scoreAmin; playSound(800, 1500, 'triangle'); if(g2_scoreAmin >= 3) matchWin = "أمين"; }
-                else if (g2_diffSaraba < g2_diffAmin) { res = `فوز صرابا بالتوقع! (أمين فرق ${g2_diffAmin}، صرابا فرق ${g2_diffSaraba})`; g2_scoreSaraba++; document.getElementById('g2-s-saraba').textContent = g2_scoreSaraba; playSound(800, 1500, 'triangle'); if(g2_scoreSaraba >= 3) matchWin = "صرابا"; }
-                else { res = `تعادل أسطوري! كلاكما بفرق ${g2_diffAmin}`; }
+                if (g2_diffAmin < g2_diffSaraba) { res = `Amin wins the call! (Amin off by ${g2_diffAmin}, Saraba off by ${g2_diffSaraba})`; g2_scoreAmin++; document.getElementById('g2-s-amin').textContent = g2_scoreAmin; playSound(800, 1500, 'triangle'); if(g2_scoreAmin >= 3) matchWin = "Amin"; }
+                else if (g2_diffSaraba < g2_diffAmin) { res = `Saraba wins the call! (Amin off by ${g2_diffAmin}, Saraba off by ${g2_diffSaraba})`; g2_scoreSaraba++; document.getElementById('g2-s-saraba').textContent = g2_scoreSaraba; playSound(800, 1500, 'triangle'); if(g2_scoreSaraba >= 3) matchWin = "Saraba"; }
+                else { res = `Legendary tie! Both off by ${g2_diffAmin}`; }
 
-                if (matchWin) { setTimeout(() => triggerWin(matchWin), 2000); } // delay slightly so they see the result
+                if (matchWin) { setTimeout(() => triggerWin(matchWin), 2000); }
                 else {
                     document.getElementById('g2-status').innerHTML = res;
                     document.getElementById('g2-btn-next').style.display = "block";
@@ -416,10 +508,9 @@
         function g2_next() {
             playSound(600, 100, 'triangle'); g2_turn = 'amin';
             document.getElementById('g2-p-saraba').classList.remove('active'); document.getElementById('g2-p-amin').classList.add('active');
-            document.getElementById('g2-status').innerHTML = "أمين هيتوقع!<br>يا صرابا شغل ووقّف العداد براحتك";
+            document.getElementById('g2-status').innerHTML = "Amin is calling it!<br>Saraba, run the counter and stop whenever you like";
             document.getElementById('g2-sec').textContent = "00"; document.getElementById('g2-mom').textContent = "00"; g2_elapsed = 0;
             document.getElementById('g2-btn-next').style.display = "none"; document.getElementById('g2-btn-start').style.display = "block";
-            // clear hidden class just in case
             document.getElementById('g2-sec').classList.remove('hidden-num'); document.getElementById('g2-mom').classList.remove('hidden-num');
         }
 
