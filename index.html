@@ -806,6 +806,18 @@
         }
         function peerLibReady() { return typeof Peer !== 'undefined'; }
 
+        // STUN handles most home/office networks; TURN is needed as a relay fallback for
+        // strict NATs (very common on mobile data) where a direct P2P link can't form.
+        const ICE_CONFIG = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+                { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+                { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+            ]
+        };
+
         function sendTo(conn, msg) { if (conn && conn.open) conn.send(msg); }
         function broadcast(msg) { Object.values(NET.conns).forEach(c => sendTo(c, msg)); }
         function broadcastAndApply(msg) { broadcast(msg); applyMessage(msg); }
@@ -831,7 +843,7 @@
             NET.myName = name; NET.mode = 'host';
             const code = genRoomCode(); NET.roomCode = code;
             showConnBanner('connecting', 'Setting up room…');
-            const peer = new Peer('sf-' + code, { debug: 0 });
+            const peer = new Peer('sf-' + code, { debug: 0, config: ICE_CONFIG });
             NET.peer = peer;
             peer.on('open', id => {
                 NET.myId = id; NET.roster = [{ id, name }];
@@ -857,16 +869,22 @@
             NET.myName = name; NET.roomCode = code; NET.mode = 'client';
             showConnBanner('connecting', 'Connecting to room ' + code + '…');
             const savedId = sessionStorage.getItem('sf_peer_id') || undefined;
-            const peer = new Peer(savedId, { debug: 0 });
+            const peer = new Peer(savedId, { debug: 0, config: ICE_CONFIG });
             NET.peer = peer;
             peer.on('open', id => {
                 NET.myId = id; try { sessionStorage.setItem('sf_peer_id', id); } catch (e) {}
                 const conn = peer.connect('sf-' + code, { reliable: true });
                 NET.hostConn = conn;
-                conn.on('open', () => { hideConnBanner(); conn.send({ t: 'join', name }); showScreen('screen-lobby'); });
+                let settled = false;
+                const timeout = setTimeout(() => {
+                    if (settled) return;
+                    settled = true;
+                    showConnBanner('error', "Couldn't reach that room — it may be a network/NAT issue on one of your connections.", clientJoinRoom);
+                }, 15000);
+                conn.on('open', () => { if (settled) return; settled = true; clearTimeout(timeout); hideConnBanner(); conn.send({ t: 'join', name }); showScreen('screen-lobby'); });
                 conn.on('data', d => applyMessage(d));
-                conn.on('close', () => showConnBanner('error', 'Lost connection to the host.', clientJoinRoom));
-                conn.on('error', () => showConnBanner('error', 'Could not reach that room. Check the code.', clientJoinRoom));
+                conn.on('close', () => { if (settled) return; settled = true; clearTimeout(timeout); showConnBanner('error', 'Lost connection to the host.', clientJoinRoom); });
+                conn.on('error', () => { if (settled) return; settled = true; clearTimeout(timeout); showConnBanner('error', 'Could not reach that room. Check the code.', clientJoinRoom); });
             });
             peer.on('error', err => {
                 if (err.type === 'peer-unavailable') showConnBanner('error', "That room code doesn't exist right now.", clientJoinRoom);
