@@ -41,12 +41,10 @@
         .bg-glow {
             position: fixed; inset: 0; z-index: 0; pointer-events: none;
             background:
-                radial-gradient(circle at 18% 20%, rgba(176,38,255,0.35) 0%, transparent 40%),
-                radial-gradient(circle at 85% 18%, rgba(0,240,255,0.22) 0%, transparent 38%),
-                radial-gradient(circle at 50% 100%, rgba(255,46,154,0.3) 0%, transparent 55%);
-            animation: glowShift 12s ease-in-out infinite alternate;
+                radial-gradient(circle at 18% 20%, rgba(176,38,255,0.32) 0%, transparent 40%),
+                radial-gradient(circle at 85% 18%, rgba(0,240,255,0.2) 0%, transparent 38%),
+                radial-gradient(circle at 50% 100%, rgba(255,46,154,0.28) 0%, transparent 55%);
         }
-        @keyframes glowShift { 0% { filter: hue-rotate(0deg) brightness(1); } 100% { filter: hue-rotate(25deg) brightness(1.15); } }
 
         .grid-floor {
             position: fixed; left: 0; right: 0; bottom: 0; height: 46vh; z-index: 1; pointer-events: none;
@@ -74,10 +72,8 @@
             content: "";
             position: absolute; inset: -3px; border-radius: 34px; z-index: -1;
             background: conic-gradient(from 0deg, var(--magenta), var(--purple), var(--cyan), var(--amber), var(--magenta));
-            filter: blur(14px); opacity: 0.75;
-            animation: frameSpin 6s linear infinite;
+            filter: blur(10px); opacity: 0.6;
         }
-        @keyframes frameSpin { to { transform: rotate(360deg); } }
 
         .game-container {
             position: relative;
@@ -184,13 +180,12 @@
         .dial-wrap { position: relative; width: 226px; height: 226px; margin: 16px auto 10px; }
         .dial-ring {
             position: absolute; inset: 0; border-radius: 50%;
-            background: repeating-conic-gradient(rgba(0,240,255,0.35) 0deg 2deg, transparent 2deg 30deg);
+            background: repeating-conic-gradient(rgba(0,240,255,0.4) 0deg 2deg, transparent 2deg 30deg);
             -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 16px), #000 calc(100% - 15px));
                     mask: radial-gradient(farthest-side, transparent calc(100% - 16px), #000 calc(100% - 15px));
             animation: spin 40s linear infinite;
-            filter: drop-shadow(0 0 6px rgba(0,240,255,0.4));
         }
-        .dial-ring.running { animation-duration: 5s; background: repeating-conic-gradient(rgba(255,46,154,0.5) 0deg 2deg, transparent 2deg 30deg); filter: drop-shadow(0 0 10px rgba(255,46,154,0.55)); }
+        .dial-ring.running { animation-duration: 5s; background: repeating-conic-gradient(rgba(255,46,154,0.55) 0deg 2deg, transparent 2deg 30deg); }
         @keyframes spin { to { transform: rotate(360deg); } }
 
         .dial-core {
@@ -564,7 +559,7 @@
 
         function throwConfetti() {
             const colors = ['#00f0ff', '#ff2e9a', '#ffe14d', '#b026ff'];
-            for (let i = 0; i < 80; i++) {
+            for (let i = 0; i < 45; i++) {
                 let conf = document.createElement('div'); conf.className = 'confetti';
                 conf.style.left = Math.random() * 100 + 'vw';
                 conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
@@ -722,7 +717,7 @@
         function openBracket() { renderBracketInto('bracket-rounds'); document.getElementById('bracket-overlay').classList.add('active'); }
         function closeBracket() { document.getElementById('bracket-overlay').classList.remove('active'); }
 
-        function startConfettiLoop() { stopConfettiLoop(); throwConfetti(); confettiLoop = setInterval(throwConfetti, 1300); }
+        function startConfettiLoop() { stopConfettiLoop(); throwConfetti(); confettiLoop = setInterval(throwConfetti, 2000); }
         function stopConfettiLoop() { if (confettiLoop) { clearInterval(confettiLoop); confettiLoop = null; } }
 
         // ================= OFFLINE (local pass-and-play) cup flow =================
