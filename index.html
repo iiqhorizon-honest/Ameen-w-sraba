@@ -8,7 +8,6 @@
     <meta name="theme-color" content="#0a0014">
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3240/3240638.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;600;700;800&display=swap');
 
@@ -603,7 +602,7 @@
         let TN = { gameType: 1, winScore: 3, players: [], rounds: [], curRound: -1, curMatch: -1, curP1: -1, curP2: -1 };
         let confettiLoop = null;
 
-        let NET = { mode: 'offline', peer: null, hostConn: null, conns: {}, myId: null, myName: '', roomCode: '', roster: [] };
+        let NET = { mode: 'offline', myId: null, myName: '', roomCode: '', roster: [] };
         let lastMatchStartMsg = null, lastStateMsg = null;
         let onlineTurn = 'a', onlineDiffA = 0, onlineDiffB = 0, onlineScoreA = 0, onlineScoreB = 0, onlineTarget = 0, onlineActual = 0;
         let awaitingFrom = null; // host-only: peerId the host is currently expecting a result from
@@ -799,25 +798,57 @@
             for (let i = 0; i < 4; i++) s += chars[Math.floor(Math.random() * chars.length)];
             return s;
         }
-        function peerLibReady() { return typeof Peer !== 'undefined'; }
 
-        // STUN handles most home/office networks; TURN is needed as a relay fallback for
-        // strict NATs (very common on mobile data) where a direct P2P link can't form.
-        const ICE_CONFIG = {
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-                { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-                { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
-            ]
-        };
+        // ---- Configure this after you deploy server.js (see the setup instructions) ----
+        const RELAY_URL = 'wss://YOUR-APP-NAME.onrender.com';
 
-        function sendTo(conn, msg) { if (conn && conn.open) conn.send(msg); }
-        function broadcast(msg) { Object.values(NET.conns).forEach(c => sendTo(c, msg)); }
+        let ws = null;
+        let pendingCreateCb = null, pendingJoinCb = null;
+
+        function relayConfigured() { return !RELAY_URL.includes('YOUR-APP-NAME'); }
+
+        function ensureSocket(onReady, onFail) {
+            if (!relayConfigured()) { onFail('The online server address hasn\'t been set up yet — see the setup instructions.'); return; }
+            if (ws && ws.readyState === WebSocket.OPEN) { onReady(); return; }
+            try { ws = new WebSocket(RELAY_URL); } catch (e) { onFail('Could not open a connection.'); return; }
+            let settled = false;
+            const timeout = setTimeout(() => {
+                if (settled) return; settled = true;
+                try { ws.close(); } catch (e) {}
+                onFail('Could not reach the online server (timed out). It may just be waking up — try again in a moment.');
+            }, 20000);
+            ws.onmessage = (ev) => {
+                let msg; try { msg = JSON.parse(ev.data); } catch (e) { return; }
+                if (msg.type === 'welcome') {
+                    if (settled) return; settled = true; clearTimeout(timeout);
+                    NET.myId = msg.id; onReady();
+                } else {
+                    handleSocketMessage(msg);
+                }
+            };
+            ws.onerror = () => { if (settled) return; settled = true; clearTimeout(timeout); onFail('Could not reach the online server.'); };
+            ws.onclose = () => {
+                if (!settled) { settled = true; clearTimeout(timeout); onFail('Could not reach the online server.'); }
+                else if (NET.mode !== 'offline') { showConnBanner('error', 'Lost connection to the online server.', () => (NET.mode === 'host' ? hostCreateRoom() : clientJoinRoom())); }
+            };
+        }
+
+        function handleSocketMessage(msg) {
+            if (msg.type === 'createResult' && pendingCreateCb) { const cb = pendingCreateCb; pendingCreateCb = null; cb(msg.ok, msg.reason); }
+            else if (msg.type === 'joinResult' && pendingJoinCb) { const cb = pendingJoinCb; pendingJoinCb = null; cb(msg.ok, msg.reason); }
+            else if (msg.type === 'relay') {
+                if (NET.mode === 'host') handleHostIncoming({ peer: msg.from }, msg.payload);
+                else applyMessage(msg.payload);
+            } else if (msg.type === 'hostLeft') {
+                showConnBanner('error', 'The host left the room.', leaveRoom);
+            }
+        }
+
+        function sendTo(targetId, msg) { if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'toClient', code: NET.roomCode, targetId, payload: msg })); }
+        function broadcast(msg) { if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'broadcast', code: NET.roomCode, payload: msg })); }
         function broadcastAndApply(msg) { broadcast(msg); applyMessage(msg); }
         function sendToHost(msg) {
-            if (NET.mode === 'client') { if (NET.hostConn && NET.hostConn.open) NET.hostConn.send(msg); }
+            if (NET.mode === 'client') { if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'toHost', code: NET.roomCode, payload: msg })); }
             else if (NET.mode === 'host') { handleHostIncoming({ peer: NET.myId }, msg); }
         }
 
@@ -832,64 +863,40 @@
         }
 
         function hostCreateRoom() {
-            if (!peerLibReady()) { showConnBanner('error', "Couldn't load the online library. Check your connection.", hostCreateRoom); return; }
-            try { if (NET.peer) NET.peer.destroy(); } catch (e) {}
             const name = document.getElementById('host-name-input').value.trim() || 'Host';
             NET.myName = name; NET.mode = 'host';
             const code = genRoomCode(); NET.roomCode = code;
             showConnBanner('connecting', 'Setting up room…');
-            const peer = new Peer('sf-' + code, { debug: 0, config: ICE_CONFIG });
-            NET.peer = peer;
-            peer.on('open', id => {
-                NET.myId = id; NET.roster = [{ id, name }];
-                hideConnBanner(); renderRoster(); showScreen('screen-lobby');
-            });
-            peer.on('connection', conn => {
-                conn.on('open', () => { NET.conns[conn.peer] = conn; conn.on('data', d => handleHostIncoming(conn, d)); });
-                conn.on('close', () => { delete NET.conns[conn.peer]; });
-            });
-            peer.on('error', err => {
-                if (err.type === 'unavailable-id') showConnBanner('error', 'That room code is taken — try again.', hostCreateRoom);
-                else showConnBanner('error', 'Connection problem (' + err.type + ').', hostCreateRoom);
-            });
-            peer.on('disconnected', () => { showConnBanner('error', 'Lost connection to the network.', () => { try { peer.reconnect(); } catch (e) { hostCreateRoom(); } }); });
+            ensureSocket(() => {
+                pendingCreateCb = (ok, reason) => {
+                    if (ok) { NET.roster = [{ id: NET.myId, name }]; hideConnBanner(); renderRoster(); showScreen('screen-lobby'); }
+                    else if (reason === 'taken') showConnBanner('error', 'That room code is taken — try again.', hostCreateRoom);
+                    else showConnBanner('error', 'Could not create the room.', hostCreateRoom);
+                };
+                ws.send(JSON.stringify({ type: 'create', code }));
+            }, (errText) => showConnBanner('error', errText, hostCreateRoom));
         }
 
         function clientJoinRoom() {
-            if (!peerLibReady()) { showConnBanner('error', "Couldn't load the online library. Check your connection.", clientJoinRoom); return; }
             const name = document.getElementById('join-name-input').value.trim() || 'Player';
             const code = document.getElementById('join-code-input').value.trim().toUpperCase();
             if (!code) { showConnBanner('error', 'Enter a room code.'); return; }
-            try { if (NET.peer) NET.peer.destroy(); } catch (e) {}
             NET.myName = name; NET.roomCode = code; NET.mode = 'client';
             showConnBanner('connecting', 'Connecting to room ' + code + '…');
-            const savedId = sessionStorage.getItem('sf_peer_id') || undefined;
-            const peer = new Peer(savedId, { debug: 0, config: ICE_CONFIG });
-            NET.peer = peer;
-            peer.on('open', id => {
-                NET.myId = id; try { sessionStorage.setItem('sf_peer_id', id); } catch (e) {}
-                const conn = peer.connect('sf-' + code, { reliable: true });
-                NET.hostConn = conn;
-                let settled = false;
-                const timeout = setTimeout(() => {
-                    if (settled) return;
-                    settled = true;
-                    showConnBanner('error', "Couldn't reach that room — it may be a network/NAT issue on one of your connections.", clientJoinRoom);
-                }, 15000);
-                conn.on('open', () => { if (settled) return; settled = true; clearTimeout(timeout); hideConnBanner(); conn.send({ t: 'join', name }); showScreen('screen-lobby'); });
-                conn.on('data', d => applyMessage(d));
-                conn.on('close', () => { if (settled) return; settled = true; clearTimeout(timeout); showConnBanner('error', 'Lost connection to the host.', clientJoinRoom); });
-                conn.on('error', () => { if (settled) return; settled = true; clearTimeout(timeout); showConnBanner('error', 'Could not reach that room. Check the code.', clientJoinRoom); });
-            });
-            peer.on('error', err => {
-                if (err.type === 'peer-unavailable') showConnBanner('error', "That room code doesn't exist right now.", clientJoinRoom);
-                else showConnBanner('error', 'Connection problem (' + err.type + ').', clientJoinRoom);
-            });
+            ensureSocket(() => {
+                pendingJoinCb = (ok, reason) => {
+                    if (ok) { hideConnBanner(); showScreen('screen-lobby'); sendToHost({ t: 'join', name }); }
+                    else if (reason === 'notfound') showConnBanner('error', "That room code doesn't exist right now.", clientJoinRoom);
+                    else showConnBanner('error', 'Could not join the room.', clientJoinRoom);
+                };
+                ws.send(JSON.stringify({ type: 'joinRoom', code }));
+            }, (errText) => showConnBanner('error', errText, clientJoinRoom));
         }
 
         function leaveRoom() {
-            try { if (NET.peer) NET.peer.destroy(); } catch (e) {}
-            NET = { mode: 'offline', peer: null, hostConn: null, conns: {}, myId: null, myName: '', roomCode: '', roster: [] };
+            try { if (ws) ws.close(); } catch (e) {}
+            ws = null;
+            NET = { mode: 'offline', myId: null, myName: '', roomCode: '', roster: [] };
             TN = { gameType: TN.gameType, winScore: 3, players: [], rounds: [], curRound: -1, curMatch: -1, curP1: -1, curP2: -1 };
             hideConnBanner();
             backToMenu();
@@ -964,12 +971,9 @@
                 if (!p) { p = { id: peerId, name: msg.name }; NET.roster.push(p); } else p.name = msg.name;
                 broadcastAndApply({ t: 'roster', roster: NET.roster });
                 if (TN.rounds.length) {
-                    const conn = NET.conns[peerId];
-                    if (conn) {
-                        sendTo(conn, { t: 'bracketBuilt', players: TN.players, rounds: TN.rounds, winScore: TN.winScore, gameType: TN.gameType });
-                        if (lastMatchStartMsg) sendTo(conn, lastMatchStartMsg);
-                        if (lastStateMsg) sendTo(conn, lastStateMsg);
-                    }
+                    sendTo(peerId, { t: 'bracketBuilt', players: TN.players, rounds: TN.rounds, winScore: TN.winScore, gameType: TN.gameType });
+                    if (lastMatchStartMsg) sendTo(peerId, lastMatchStartMsg);
+                    if (lastStateMsg) sendTo(peerId, lastStateMsg);
                 }
             } else if (msg.t === 'g1Result') {
                 if (peerId !== awaitingFrom) return;
